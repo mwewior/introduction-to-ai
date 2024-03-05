@@ -216,8 +216,6 @@ class Plotter:
         plt.show()
 
 
-# %matplotlib inline
-
 RastriginPlot = Plotter(2, 400, "Rastrigin")
 RastriginPlot.plot()
 
