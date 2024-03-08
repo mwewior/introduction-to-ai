@@ -8,12 +8,10 @@ DIMENSIONS = 2
 
 
 def get_truncated_normal(mean=0, sd=1, low=0, upp=10):
-    return truncnorm(
-        (low - mean) / sd, (upp - mean) / sd, loc=mean, scale=sd)
+    return truncnorm((low - mean) / sd, (upp - mean) / sd, loc=mean, scale=sd)
 
 
 class Function:
-
     def __init__(self, bounds, dimensions, beta, initial_position):
         self._name = None
         self._bounds = bounds
@@ -42,11 +40,8 @@ class Function:
     def set_beta(self, new_beta):
         self._beta = new_beta
 
-
-
     def grad(self, x_vector, i):
         return None
-
 
     def update_position(self):
         min_bound = self._bounds[0]
@@ -55,7 +50,7 @@ class Function:
         x = copy.deepcopy(self.position())
 
         for i in range(d):
-            upd = self.beta()*self.grad(x, i)
+            upd = self.beta() * self.grad(x, i)
             x[i] = x[i] - upd
 
             while x[i] > max_bound:
@@ -70,17 +65,17 @@ class Function:
 
 
 class Rastrigin(Function):
-
     def __init__(self, bounds, dimensions, beta, initial_position):
         super().__init__(bounds, dimensions, beta, initial_position)
         self._name = "Rastrigin"
 
     def q(self, x_vector):
         d = self._dimensions
-        partial_cost = lambda x: x**2 - 10*np.cos(2*np.pi*x)
+        partial_cost = lambda x: x ** 2 - 10 * np.cos(2 * np.pi * x)
 
-        cost = 10*d
-        for i in range(d) : cost += partial_cost(x_vector[i])
+        cost = 10 * d
+        for i in range(d):
+            cost += partial_cost(x_vector[i])
 
         return cost
 
@@ -89,56 +84,48 @@ class Rastrigin(Function):
 
     def grad(self, x_vector, i):
         x = x_vector[i]
-        gradient = 2*x +20*np.pi*np.sin(np.pi*x)
+        gradient = 2 * x + 20 * np.pi * np.sin(np.pi * x)
         return gradient
 
 
-
 class Griewank(Function):
-
     def __init__(self, bounds, dimensions, beta, initial_position):
         super().__init__(bounds, dimensions, beta, initial_position)
         self._name = "Griewank"
-
 
     def q(self, x_vector):
         d = self._dimensions
 
         SUM = 0
         for i in range(d):
-            SUM += x_vector[i]**2
+            SUM += x_vector[i] ** 2
         SUM = SUM / 4000
 
         PI = 1
         for i in range(d):
-            PI = PI*np.cos(
-                x_vector[i]*np.sqrt(i+1)/(i+1)
-            )
+            PI = PI * np.cos(x_vector[i] * np.sqrt(i + 1) / (i + 1))
 
         return SUM - PI + 1
-
 
     def grad(self, x_vector, i):
         x = x_vector
         PI_rest = 1
         for j in range(self.d()):
             if j != i:
-                PI_rest = PI_rest*np.cos(
-                    x[j]*np.sqrt(j+1)/(j+1)
-                )
+                PI_rest = PI_rest * np.cos(x[j] * np.sqrt(j + 1) / (j + 1))
 
-        return x[i]/2000 + np.sin(x[i]*np.sqrt(i+1)/(i+1)) * PI_rest*np.sqrt(i+1)/(i+1)
+        return x[i] / 2000 + np.sin(
+            x[i] * np.sqrt(i + 1) / (i + 1)
+        ) * PI_rest * np.sqrt(i + 1) / (i + 1)
 
 
 class Test:
-
     def __init__(self, max_iterations, function, epsilon=None):
         self._max_iterations = max_iterations
         self._last_iteration = max_iterations
         self._function = function
         self._epsilon = epsilon
         self._routes = None
-
 
     def max_interations(self):
         return self._max_iterations
@@ -206,7 +193,6 @@ class Plotter:
         self._steps = steps
         self._name = name
 
-
     def name(self):
         return self._name
 
@@ -225,27 +211,25 @@ class Plotter:
     def q(self, x_vector):
         d = self.d()
         if self.name() == "Rastrigin":
-            partial_cost = lambda x: x**2 - 10*np.cos(2*np.pi*x)
-            cost = 10*d
+            partial_cost = lambda x: x ** 2 - 10 * np.cos(2 * np.pi * x)
+            cost = 10 * d
 
-            for i in range(d) : cost += partial_cost(x_vector[i])
+            for i in range(d):
+                cost += partial_cost(x_vector[i])
 
             return cost
 
         if self.name() == "Griewank":
             SUM = 0
             for i in range(d):
-                SUM += x_vector[i]**2
+                SUM += x_vector[i] ** 2
             SUM = SUM / 4000
 
             PI = 1
             for i in range(d):
-                PI = PI*np.cos(
-                    x_vector[i]*np.sqrt(i+1)/(i+1)
-                )
+                PI = PI * np.cos(x_vector[i] * np.sqrt(i + 1) / (i + 1))
 
             return SUM - PI + 1
-
 
     def plot_route(self, route_x, route_y):
         plt.scatter(route_x[1:-1], route_y[1:-1])
@@ -253,20 +237,19 @@ class Plotter:
         plt.scatter(route_x[0], route_y[0], color="white")
         plt.scatter(route_x[-1], route_y[-1], color="red")
 
-
     def plot(self, route_x=None, route_y=None):
         step = self.steps()
         bounds = self.bounds()
         diff = bounds[1] - bounds[0]
-        Z = np.zeros((step+1, step+1))
-        for i in range(step+1):
-            y = bounds[0] + i*diff/step
-            for j in range(step+1):
-                x = bounds[0] + j*diff/step
+        Z = np.zeros((step + 1, step + 1))
+        for i in range(step + 1):
+            y = bounds[0] + i * diff / step
+            for j in range(step + 1):
+                x = bounds[0] + j * diff / step
                 Z[i][j] = self.q([x, y])
 
-        x = np.linspace(bounds[0], bounds[1], step+1)
-        y = np.linspace(bounds[0], bounds[1], step+1)
+        x = np.linspace(bounds[0], bounds[1], step + 1)
+        y = np.linspace(bounds[0], bounds[1], step + 1)
 
         X, Y = np.meshgrid(x, y)
 
@@ -288,9 +271,16 @@ class Plotter:
         plt.show()
 
 
-
 class Experiment:
-    def __init__(self, function, iterations: int, step: float, experiment_domain: float, epsilon: float, show: bool):
+    def __init__(
+        self,
+        function,
+        iterations: int,
+        step: float,
+        experiment_domain: float,
+        epsilon: float,
+        show: bool,
+    ):
         self._function = function
         self._iterations = iterations
         self._step = step
@@ -316,7 +306,7 @@ class Experiment:
     def show_flag(self):
         return self._show
 
-    def specify_function(self, function, x=None,  beta=None):
+    def specify_function(self, function, x=None, beta=None):
         if x != None:
             function.set_position(x)
         if beta != None:
@@ -327,22 +317,24 @@ class Experiment:
         Y = data[1::]
         plt.figure()
         plt.grid(True)
-        for y in Y: plt.plot(X, y)
+        for y in Y:
+            plt.plot(X, y)
         if scatter:
-            for y in Y: plt.scatter(X, y, c='#ff7f0e')
+            for y in Y:
+                plt.scatter(X, y, c="#ff7f0e")
         plt.show()
-
 
     def beta_experiment(self, init_points):
         results = []
         xy_results = []
-        for _ in range(len(init_points)+1): xy_results.append([])
+        for _ in range(len(init_points) + 1):
+            xy_results.append([])
 
         int_range = int(self.domain() / self.step())
 
-        for i in range(int_range+1):
+        for i in range(int_range + 1):
 
-            beta = (i+1)*self.step()
+            beta = (i + 1) * self.step()
             results.append([])
             xy_results[0].append(beta)
 
@@ -353,11 +345,10 @@ class Experiment:
                 test = Test(self.iterations(), test_func, self.epsilon())
                 route_x, route_y, route_q = test.do_test()
                 results[i].append(route_q[-1])
-                xy_results[t+1].append(route_q[-1])
+                xy_results[t + 1].append(route_q[-1])
 
         if self.show_flag():
             self.plot(xy_results)
-
 
     def initial_position_experiment(self, inits_count, beta):
         xy_results = [[], [], []]
@@ -373,7 +364,7 @@ class Experiment:
             x1 = X.rvs()
             x2 = X.rvs()
             position = [x1, x2]
-            norm = np.sqrt(x1**2 + x2**2)
+            norm = np.sqrt(x1 ** 2 + x2 ** 2)
 
             xy_results[0].append(position)
             xy_results[1].append(norm)
@@ -387,15 +378,11 @@ class Experiment:
             xy_results[2].append(route_q[-1])
 
         zipped = list(zip(xy_results[1], xy_results[2]))
-        dist_q = sorted(zipped, key = lambda x: x[0])
-        xs_and_qs = [
-            [i for i, j in dist_q],
-            [j for i, j in dist_q]
-        ]
+        dist_q = sorted(zipped, key=lambda x: x[0])
+        xs_and_qs = [[i for i, j in dist_q], [j for i, j in dist_q]]
 
         if self.show_flag():
             self.plot(xs_and_qs, scatter=True)
-
 
 
 """
