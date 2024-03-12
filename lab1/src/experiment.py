@@ -1,4 +1,4 @@
-from thistest import ThisTest as Test
+from trajectory import Trajectory as Test
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.stats import truncnorm

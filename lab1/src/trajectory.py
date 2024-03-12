@@ -1,4 +1,4 @@
-class ThisTest:
+class Trajectory:
     def __init__(self, max_iterations, function, epsilon=None):
         self._max_iterations = max_iterations
         self._last_iteration = max_iterations
