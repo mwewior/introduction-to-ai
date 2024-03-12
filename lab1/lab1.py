@@ -71,7 +71,7 @@ class Rastrigin(Function):
 
     def q(self, x_vector):
         d = self._dimensions
-        partial_cost = lambda x: x ** 2 - 10 * np.cos(2 * np.pi * x)
+        partial_cost = lambda x: x ** 2 - 10 * np.cos(2 * np.pi * x) # noqa
 
         cost = 10 * d
         for i in range(d):
@@ -211,7 +211,7 @@ class Plotter:
     def q(self, x_vector):
         d = self.d()
         if self.name() == "Rastrigin":
-            partial_cost = lambda x: x ** 2 - 10 * np.cos(2 * np.pi * x)
+            partial_cost = lambda x: x ** 2 - 10 * np.cos(2 * np.pi * x) # noqa
             cost = 10 * d
 
             for i in range(d):
@@ -265,7 +265,7 @@ class Plotter:
         plt.xlabel("X")
         plt.ylabel("Y")
 
-        if not (route_x == None or route_y == None):
+        if not (route_x is None or route_y is None):
             self.plot_route(route_x, route_y)
 
         plt.show()
@@ -307,9 +307,9 @@ class Experiment:
         return self._show
 
     def specify_function(self, function, x=None, beta=None):
-        if x != None:
+        if x is not None:
             function.set_position(x)
-        if beta != None:
+        if beta is not None:
             function.set_beta(beta)
 
     def plot(self, data, scatter=False):
@@ -407,7 +407,9 @@ x_init = [
 ]
 
 test_func = Griewank(bounds, DIMENSIONS, beta=None, initial_position=None)
-current_experiment = Experiment(test_func, iterations, step, domain, epsilon, show_plots)
+current_experiment = Experiment(
+    test_func, iterations, step, domain, epsilon, show_plots
+    )
 current_experiment.beta_experiment(x_init)
 current_experiment.initial_position_experiment(COUNT, beta_init)
 
@@ -436,7 +438,9 @@ x_init = [
 
 
 test_func = Rastrigin(bounds, DIMENSIONS, beta=None, initial_position=None)
-current_experiment = Experiment(test_func, iterations, step, domain, epsilon, show_plots)
+current_experiment = Experiment(
+    test_func, iterations, step, domain, epsilon, show_plots
+    )
 current_experiment.beta_experiment(x_init)
 current_experiment.initial_position_experiment(COUNT, beta_init)
 """
