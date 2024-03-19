@@ -1,7 +1,7 @@
 from griewank import Griewank
 from rastring import Rastrigin
 from quadratic import Quadratic
-from thistest import ThisTest as Test
+from lab1.src.trajectory import Trajectory as Test
 from experiment import Experiment
 from plotter import Plotter
 
