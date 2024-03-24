@@ -2,7 +2,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from functions import Function
-from evolution import Evolution
 
 
 PLOT_STEPS = 200
@@ -39,14 +38,7 @@ class Plotter:
     def q(self, x_vector):
         return self.funciton().q(x_vector)
 
-    # def axes(self, fig):
-    #     # fig = plt.figure()
-    #     ax = fig.add_subplot()
-    #     ax.set_xlim(self.funciton().bounds()[0], self.funciton().bounds()[1])
-    #     ax.set_ylim(self.funciton().bounds()[0], self.funciton().bounds()[1])
-    #     return ax
-
-    def plot(self, drow_now=False):
+    def draw_grid(self, drow_now=False):
 
         step = self.steps()
         bounds = self.bounds()
@@ -64,60 +56,47 @@ class Plotter:
 
         X, Y = np.meshgrid(x, y)
 
-        plt.figure()
-        plt.ion()
-
         # fig = plt.figure()
-        # ax = self.axes(fig)
+        plt.figure()
+
         contour = plt.contourf(X, Y, Z, cmap=PLOT_COLOR, levels=100)
         cbar = plt.colorbar(contour)
-        # contour = ax.contourf(X, Y, Z, cmap=PLOT_COLOR, levels=100)
-        # cbar = fig.colorbar(contour)
-        cbar.set_label("Function value")
+        cbar.set_label("Wartość funkcji")
 
         plt.grid(True)
-        plt.xlabel("x1")
-        plt.ylabel("x2", rotation=0)
+        plt.xlabel("X")
+        plt.ylabel("Y")
 
-        # ax.grid(True)
-        # plt.xlabel("x1")
-        # plt.ylabel("x2", rotation=0)
+    def draw_online(self):
+        plt.ion()
 
-        if not drow_now:
-            plt.show()
+        self.draw_grid(self)
 
-    def draw_points(self, evolution: Evolution, fig=None):
-        # plt.ion()
-        # self.plot(drow_online=True)
+        # Wyświetlenie punktów
+        plot_points = plt.scatter([], [], c=PARTICLES_COLOR, marker=".")
+        plot_best_point = plt.scatter([], [], c=BEST_COLOR, marker="*")
 
-        X = []
-        Y = []
-        best_fitnesses = evolution.best_fitness().position()
-        for particle in evolution.population():
-            X.append(particle.position()[0])
-            Y.append(particle.position()[1])
-        # ax = self.axes(fig)
-        plt.scatter(X, Y, c=PARTICLES_COLOR, marker=".")
+        plt.show()
+        return plot_points, plot_best_point
+
+    def draw_result(
+        self, best_position, best_fitness, min_bound, max_bound, fun
+    ):
+
+        self.draw_grid(self)
+        # Oznaczenie znalezionego punktu
         plt.scatter(
-            best_fitnesses[0], best_fitnesses[1], c=BEST_COLOR, marker="*"
+            [best_position[0]],
+            [best_position[1]],
+            color="w",
+            s=50,
+            label="Best Position",
         )
-        # ax.scatter(X, Y, c=PARTICLES_COLOR, marker=".")
-        # ax.scatter(
-        #   best_fitnesses[0], best_fitnesses[1], c=BEST_COLOR, marker="*"
-        # )
+
         plt.show()
 
-    # def draw_online(
-    #     self, evolution: Evolution, gif: bool = True, t: int = None
-    #     ):
-    #     X = []
-    #     Y = []
-    #     best_fitnesses = evolution.best_fitness().position()
-    #     for particle in evolution.population():
-    #         X.append(particle.position()[0])
-    #         Y.append(particle.position()[1])
-    #     plt.scatter(X, Y, c=PARTICLES_COLOR, marker=".")
+    def off(self):
+        plt.ioff()
 
-    #     if gif:
-
-    #     plt.show()
+    def pause(self):
+        plt.pause(0.1)

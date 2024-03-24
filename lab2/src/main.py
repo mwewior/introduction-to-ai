@@ -1,6 +1,7 @@
-from functions import Rastrigin, Griewank, DropWave
+import numpy as np
+import matplotlib.pyplot as plt
 
-# from particle import Particle
+from functions import Rastrigin, Griewank, DropWave
 from evolution import Evolution
 from plotter import Plotter
 
@@ -11,6 +12,7 @@ DROP_BOUNDS = [-4, 4]
 DIMENSIONS = 2
 
 
+DRAW = True
 PLOT_STEPS = 200
 PLOT_COLOR = "turbo"
 PARTICLES_COLOR = "white"
@@ -19,7 +21,7 @@ BEST_COLOR = "magenta"
 # cubehelix # gist_earth # turbo # terrain
 
 
-ITERATIONS = 1000
+ITERATIONS = 50
 POPULATION = 25
 PC = 0.4
 PM = 0.7
@@ -37,10 +39,7 @@ testing_functions = [
 for testfun in testing_functions:
 
     plot = Plotter(testfun, PLOT_STEPS)
-    # fig = plt.figure()
-    # ax = fig.add_subplot()
-    # ax.set_xlim(testfun.bounds()[0], testfun.bounds()[1])
-    # ax.set_ylim(testfun.bounds()[0], testfun.bounds()[1])
+    draw = DRAW
 
     sigma = SIGMA
     if testfun.name() == "Griewank":
@@ -48,32 +47,29 @@ for testfun in testing_functions:
 
     population = Evolution(testfun, ITERATIONS, POPULATION, PM, PC, sigma)
     best_fitnesses = []
+
+    if draw:
+        plot_points, plot_best_point = plot.draw_online()
+
     t = 0
-
-    # plot.plot(False)
-
     while t < population.iterations():
         t += 1
         population.new_generation()
         best_fitnesses.append(population.best_fitness().value())
 
-        # X = []
-        # Y = []
-        # for particle in population.population():
-        #     X.append(particle.position()[0])
-        #     Y.append(particle.position()[1])
-        # scat = ax.scatter(X, Y, c=PARTICLES_COLOR, marker=".")
-        # plt.title(f'Generation: {t+1}')
-        # # plt.savefig(
-        #     f'/home/szczygiel/pop/projekt/pop_projekt/tmp_figures/fig{i}.png'
-        # )
-        # plt.pause(0.001)
-        # scat.remove()
+        if draw:
+            plt.title(f"Generation: {t+1}")
+            x, y = population.positions()
+            plot_points.set_offsets(np.column_stack((x, y)))
+            plot_best_point.set_offsets(
+                np.column_stack((
+                    population.best_fitness().position()[0],
+                    population.best_fitness().position()[1],
+                ))
+            )
+            plot.pause()
 
-    # plt.show()
-
+    if draw:
+        plot.off()
     print(population.best_fitness().value())
-    # plot.draw_online(population)
-
-    plot.plot(True)
-    plot.draw_points(population)
+plt.show(block=True)

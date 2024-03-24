@@ -73,6 +73,14 @@ class Evolution:
         self.population().sort(key=lambda p: p.value())
         self._current_best_fitness = self.population()[0]
 
+    def positions(self):
+        x = []
+        y = []
+        for particle in self.population():
+            x.append(particle.position()[0])
+            y.append(particle.position()[1])
+        return x, y
+
     def best_fitness(self) -> Particle:
         return self._current_best_fitness
 
