@@ -113,7 +113,7 @@ class Evolution:
         """if we would know global optimum at start:"""
         # for particle in self.population():
         #     r = 0
-        #     for d in range(self.function.dimention()):
+        #     for d in range(self.function().dimension()):
         #         r += particle.position()[d]**2
         #     particle.set_rank(np.sqrt(r))
 

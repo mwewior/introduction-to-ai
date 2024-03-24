@@ -21,7 +21,7 @@ BEST_COLOR = "magenta"
 # cubehelix # gist_earth # turbo # terrain
 
 
-ITERATIONS = 50
+ITERATIONS = 100
 POPULATION = 25
 PC = 0.4
 PM = 0.7
@@ -58,7 +58,7 @@ for testfun in testing_functions:
         best_fitnesses.append(population.best_fitness().value())
 
         if draw:
-            plt.title(f"Generation: {t+1}")
+            plt.title(f"Generacja: {t}")
             x, y = population.positions()
             plot_points.set_offsets(np.column_stack((x, y)))
             plot_best_point.set_offsets(

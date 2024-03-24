@@ -79,16 +79,14 @@ class Plotter:
         plt.show()
         return plot_points, plot_best_point
 
-    def draw_result(
-        self, best_position, best_fitness, min_bound, max_bound, fun
-    ):
+    def draw_result(self, best_position):
 
         self.draw_grid(self)
         # Oznaczenie znalezionego punktu
         plt.scatter(
             [best_position[0]],
             [best_position[1]],
-            color="w",
+            color=BEST_COLOR,
             s=50,
             label="Best Position",
         )
