@@ -103,11 +103,19 @@ class Evolution:
         self.sort_population()
 
         best_fitness = self.best_history_fitness()
-        best_fitness.set_rank(1)
-        best_value = best_fitness.value()
+        best_fitness.set_rank(0)
+        # best_value = best_fitness.value()
+        best_position = best_fitness.position()
+
+        # for particle in self.population()[1::]:
+        #     r = 1 + (particle.value() - best_value) ** 2
+        #     particle.set_rank(r)
 
         for particle in self.population()[1::]:
-            r = 1 + (particle.value() - best_value) ** 2
+            dist = 0
+            for d in range(len(best_position)):
+                dist += (particle.position()[d] - best_position[d]) ** 2
+            r = np.sqrt(dist)
             particle.set_rank(r)
 
         """if we would know global optimum at start:"""
@@ -122,18 +130,30 @@ class Evolution:
         if a < self.pc():
 
             second_parent = random.choice(self.population())
-            possible_position = []
 
-            for parent in [first_parent, second_parent]:
-                for d in range(self.function().dimension()):
-                    possible_position.append(parent.position()[d])
-
+            """uśredniające"""
             particle = Particle(
                 first_parent.id(), [None, None], self.function()
             )
 
             for d in range(self.function().dimension()):
-                particle.set_position(d, random.choice(possible_position))
+                w = np.random.random()
+                between_position = first_parent.position()[d] * w + second_parent.position()[d] * (1 - w) # noqa
+                particle.set_position(d, between_position)
+
+            """wymieniające"""
+            # possible_position = []
+
+            # for parent in [first_parent, second_parent]:
+            #     for d in range(self.function().dimension()):
+            #         possible_position.append(parent.position()[d])
+
+            # particle = Particle(
+            #     first_parent.id(), [None, None], self.function()
+            # )
+
+            # for d in range(self.function().dimension()):
+            #     particle.set_position(d, random.choice(possible_position))
 
         else:
             particle = first_parent
