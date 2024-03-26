@@ -37,7 +37,7 @@ class Rastrigin(Function):
 
     def q(self, x_vector) -> float:
         d = self.dimension()
-        partial_cost = lambda x: x ** 2 - 10 * np.cos(2 * np.pi * x) # noqa
+        partial_cost = lambda x: x ** 2 - 10 * np.cos(2 * np.pi * x)  # noqa
 
         cost = 10 * d
         for i in range(d):

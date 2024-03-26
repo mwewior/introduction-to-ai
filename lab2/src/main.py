@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from functions import Rastrigin, Griewank
+from functions import Rastrigin, Griewank, Quadratic
 from functions import DropWave
 from evolution import Evolution
 from plotter import Plotter
@@ -22,7 +22,7 @@ BEST_COLOR = "magenta"
 # cubehelix # gist_earth # turbo # terrain
 
 
-ITERATIONS = 400
+ITERATIONS = 250
 POPULATION = 40
 PC = 0.6
 PM = 0.4
@@ -31,6 +31,8 @@ ELITE_SUCCESSION = 1
 
 
 testing_functions = [
+    Quadratic(RAST_BOUNDS, DIMENSIONS),
+    Quadratic(GRIE_BOUNDS, DIMENSIONS),
     Griewank(GRIE_BOUNDS, DIMENSIONS),
     Rastrigin(RAST_BOUNDS, DIMENSIONS),
     DropWave(DROP_BOUNDS, DIMENSIONS),
@@ -41,10 +43,8 @@ for testfun in testing_functions:
 
     plot = Plotter(testfun, PLOT_STEPS)
     draw = DRAW
-
     sigma = SIGMA
     mutacja = PM
-    # mutacja = 0
     if testfun.name() == "Griewank":
         sigma = 3
 
@@ -65,10 +65,12 @@ for testfun in testing_functions:
             x, y = population.positions()
             plot_points.set_offsets(np.column_stack((x, y)))
             plot_best_point.set_offsets(
-                np.column_stack((
-                    population.best_fitness().position()[0],
-                    population.best_fitness().position()[1],
-                ))
+                np.column_stack(
+                    (
+                        population.best_fitness().position()[0],
+                        population.best_fitness().position()[1],
+                    )
+                )
             )
             plot.pause()
 
