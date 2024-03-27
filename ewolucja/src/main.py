@@ -31,10 +31,10 @@ ELITE_SUCCESSION = 1
 
 
 testing_functions = [
-    Quadratic(RAST_BOUNDS, DIMENSIONS),
-    Quadratic(GRIE_BOUNDS, DIMENSIONS),
-    Griewank(GRIE_BOUNDS, DIMENSIONS),
-    Rastrigin(RAST_BOUNDS, DIMENSIONS),
+    # Quadratic(RAST_BOUNDS, DIMENSIONS),
+    # Quadratic(GRIE_BOUNDS, DIMENSIONS),
+    # Griewank(GRIE_BOUNDS, DIMENSIONS),
+    # Rastrigin(RAST_BOUNDS, DIMENSIONS),
     DropWave(DROP_BOUNDS, DIMENSIONS),
 ]
 
