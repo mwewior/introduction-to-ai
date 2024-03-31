@@ -117,27 +117,80 @@ def minmax(
         return best_score
 
 
-def make_best_move(state):  # , maximizing):
+def alpha_pruning(
+    state: np.ndarray,
+    depth: int,
+    # action: tuple, # (int, int)
+    maximizing: bool,
+    alpha: int = -np.inf,
+    beta: int = np.inf,
+) -> int:
+    max_level = state.size
+    if check_win(state)[0] or depth == 0 or level(state) == max_level:
+        return evaluate_game(state)
+
+    if maximizing:
+        best_score = -1*np.inf
+        for move in possible_moves(state):
+            next_state = state.copy()
+            next_state[move] = 'x'
+            next_score = alpha_pruning(next_state, depth-1, False, alpha, beta)
+            best_score = max(best_score, next_score)
+            if best_score > beta:
+                break
+            alpha = max(alpha, best_score)
+        return best_score
+    if not maximizing:
+        best_score = np.inf
+        for move in possible_moves(state):
+            next_state = state.copy()
+            next_state[move] = 'o'
+            next_score = alpha_pruning(next_state, depth-1, True, alpha, beta)
+            best_score = min(best_score, next_score)
+            if best_score < alpha:
+                break
+            beta = min(beta, best_score)
+        return best_score
+
+
+def make_best_move(state, maximizing):
     best_move = None
-    best_score = -1*np.inf
-    for move in possible_moves(state):
-        next_state = state.copy()
-        next_state[move] = 'x'
-        score = minmax(next_state, DEPTH, maximizing=False)
-        if score > best_score:
-            best_score = score
-            best_move = move
-    return best_move
+    if maximizing:
+        best_score = -1*np.inf
+        for move in possible_moves(state):
+            next_state = state.copy()
+            next_state[move] = 'x'
+            # score = minmax(next_state, DEPTH, False)
+            score = alpha_pruning(next_state, DEPTH, False)
+            if score > best_score:
+                best_score = score
+                best_move = move
+        return best_move
+    if not maximizing:
+        best_score = np.inf
+        for move in possible_moves(state):
+            next_state = state.copy()
+            next_state[move] = 'o'
+            # score = minmax(next_state, DEPTH, True)
+            score = alpha_pruning(next_state, DEPTH, True)
+            if score < best_score:
+                best_score = score
+                best_move = move
+        return best_move
 
 
-tictactoe = Board(SIZE, True)
-tictactoe.print()
-state = np.array(tictactoe.board)
-size = state.size
-while tictactoe.round() < size and not tictactoe.finished():
-    if not tictactoe._x_player:
-        tictactoe.move()
-    else:
-        move = make_best_move(state)
-        tictactoe.move(move)
+if __name__ == "__main__":
+    tictactoe = Board(SIZE, x_starts=False)
+    tictactoe.print()
     state = np.array(tictactoe.board)
+    size = state.size
+    while tictactoe.round() < size and not tictactoe.finished():
+        if tictactoe._o_player:
+            # tictactoe.move()
+            move = make_best_move(state, False)
+            tictactoe.move(move)
+        elif tictactoe._x_player:
+            # tictactoe.move()
+            move = make_best_move(state, True)
+            tictactoe.move(move)
+        state = np.array(tictactoe.board)
