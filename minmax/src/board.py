@@ -30,6 +30,7 @@ class Board:
 
     def create_print_board(self, size: int) -> list:
         plain_board = []
+        simple_board = self.create_board(size)
         for i in range(3 * size - 1):
             if (i + 1) % 3 == 0:
                 plain_board.append(self.create_line("_"))
@@ -38,7 +39,7 @@ class Board:
         plain_board.append(self.create_line(" "))
         for row in range(size):
             for col in range(size):
-                num = self._simple_board[row][col]
+                num = simple_board[row][col]
                 print_row, print_col = printable_row_col(row, col)
                 if num < 10:
                     plain_board[print_row][print_col] = str(num)
@@ -48,16 +49,21 @@ class Board:
                 # self._simple_board[row][col] = ''
         return plain_board
 
-    def __init__(self, size: int = 3):
+    def __init__(
+            self,
+            size: int = 3,
+            x_starts: bool = True,
+            init_state: np.ndarray = np.ndarray((3, 3), dtype='U7')
+            ):
         self._size = size
         self._max_round = size ** 2
         self._round_count = 0
         self._players = ["x", "o"]
-        self._x_player = False
+        self._x_player = x_starts
+        self._o_player = not x_starts
         self._is_finished = False
-        self._simple_board = self.create_board(self._size)
         self._print_board = self.create_print_board(self._size)
-        self.board = np.ndarray((3, 3), dtype='U7')
+        self.board = init_state
 
     def size(self) -> int:
         return self._size
@@ -75,18 +81,27 @@ class Board:
         return self._max_round
 
     def next_player(self) -> bool:
+        self._round_count += 1
         self._x_player = not self._x_player
+        self._o_player = not self._o_player
 
     def current_player(self) -> str:
         if self._x_player:
-            player = self._players[0]
-        else:
-            player = self._players[1]
+            player = "x"
+        if self._o_player:
+            player = "o"
+        return player
+
+    def last_player(self) -> str:
+        if not self._x_player:
+            player = "x"
+        if not self._o_player:
+            player = "o"
         return player
 
     def convert_input(self, position: int):
-        row = (int(position) - 1) // self._size  # całkowitoliczbowe
-        col = int(position) % self._size - 1  # modulo
+        row = (int(position) - 1) // self._size     # całkowitoliczbowe
+        col = int(position) % self._size - 1        # modulo
         if col == -1:
             col = self._size - 1
         return row, col
@@ -96,7 +111,7 @@ class Board:
         try:
             position = int(position)
             row, col = self.convert_input(position)
-            if type(self._simple_board[row][col]) is str:
+            if self.board[row][col] != '':
                 raise SquareOccupiedError
         except (ValueError, IndexError):
             print(f"\nValue must be a integer between 1 and {self._max_round}")
@@ -104,70 +119,130 @@ class Board:
         except SquareOccupiedError:
             print("Cannot put your mark on occupied square")
             position = self.validate_input()
-
         return position
 
-    def read_input(self, human_player=True):
+    def read_input(self):
         player = self.current_player()
-        if human_player:
-            print('-----------------------------')
-            print(f"\nCurrent player is '{player}'")
+        print(f"\nCurrent player is '{player}'")
         position = self.validate_input()
         row, col = self.convert_input(position)
         return row, col
 
+    def update_print_board(self, row, col):
+        board = self.get_print_board()
+        print_row, print_col = printable_row_col(row, col)
+        board[print_row][print_col] = self.board[row][col]
+        board[print_row][print_col + 1] = " "
+
     def print(self):
         print("\n")
+        for row in range(self.size()):
+            for col in range(self.size()):
+                if self.board[row][col] != "":
+                    self.update_print_board(row, col)
         board = self.get_print_board()
         for row in board:
             line = ""
             for char in row:
                 line += str(char)
             print(line)
+        print('\n-----------------------------')
 
-    def update_print_board(self, row, col):
-        board = self.get_print_board()
-        print_row, print_col = printable_row_col(row, col)
-        board[print_row][print_col] = self._simple_board[row][col]
-        board[print_row][print_col + 1] = " "
+    # def check_win(self):
+    #     for i in range(self._size):
+    #         row_count = 0
+    #         col_count = 0
+    #         diag_up_count = 0
+    #         diag_down_count = 0
+
+    #         for j in range(self._size):
+    #             if self.board[i][j] == self.board[i][0]:
+    #                 if self.board[i][j] != "":
+    #                     row_count += 1
+    #             if self.board[j][i] == self.board[0][i]:
+    #                 if self.board[j][i] != "":
+    #                     col_count += 1
+    #             if self.board[j][j] == self.board[0][0]:
+    #                 if self.board[j][j] != "":
+    #                     diag_up_count += 1
+    #             if self.board[-(j+1)][j] == self.board[0][-1]:
+    #                 if self.board[-(j+1)][j] != "":
+    #                     diag_down_count += 1
+
+    #         if row_count == self._size:
+    #             self._is_finished = True
+    #         if col_count == self._size:
+    #             self._is_finished = True
+    #         if diag_up_count == self._size:
+    #             self._is_finished = True
+    #         if diag_down_count == self._size:
+    #             self._is_finished = True
+    #         if self._is_finished:
+    #             self.next_player()
 
     def check_win(self):
-        for i in range(self._size):
+        size = self.size()
+        state = self.board
+        for i in range(size):
             row_count = 0
             col_count = 0
             diag_up_count = 0
             diag_down_count = 0
 
-            for j in range(self._size):
-                if self._simple_board[i][j] == self._simple_board[i][0]:
-                    row_count += 1
-                if self._simple_board[j][i] == self._simple_board[0][i]:
-                    col_count += 1
-                if self._simple_board[j][j] == self._simple_board[0][0]:
-                    diag_up_count += 1
-                if self._simple_board[-(j+1)][j] == self._simple_board[0][-1]:
-                    diag_down_count += 1
+            for j in range(size):
+                if state[i][j] == state[i][0]:
+                    if state[i][j] != "":
+                        row_count += 1
+                if state[j][i] == state[0][i]:
+                    if state[j][i] != "":
+                        col_count += 1
+                if state[j][j] == state[0][0]:
+                    if state[j][j] != "":
+                        diag_down_count += 1
+                if state[-(j+1)][j] == state[0][-1]:
+                    if state[-(j+1)][j] != "":
+                        diag_up_count += 1
 
-            if row_count == self._size:
+            if row_count == size:
                 self._is_finished = True
-            if col_count == self._size:
+                winner = state[i][0]
+                return True, winner
+            if col_count == size:
                 self._is_finished = True
-            if diag_up_count == self._size:
+                winner = state[0][i]
+                return True, winner
+            if diag_down_count == size:
                 self._is_finished = True
-            if diag_down_count == self._size:
+                winner = state[0][0]
+                return True, winner
+            if diag_up_count == size:
                 self._is_finished = True
+                winner = state[-1][0]
+                return True, winner
+        return False, None
 
-            if self._is_finished:
-                self.next_player()
+    def who_wins(self, winner):
+        if winner is not None:
+            print(f"\n\n'{winner}' won the game!\n")
+        if self.round() == self.max_round():
+            print('\n\nDraw!\n')
+        else:
+            pass
 
-    def move(self, human_player=True):
-        row, col = self.read_input(human_player)
-        self._simple_board[row][col] = self.current_player()
+    def move(self, move=None):
+        winner = None
+        if move is None:
+            row, col = self.read_input()
+        else:
+            (row, col) = move
         self.board[row][col] = self.current_player()
-        self.update_print_board(row, col)
-        if human_player:
-            self.print()
-        self._round_count += 1
+        # self.update_print_board(row, col)
+        # if human_player:
+        self.print()
+        # self._round_count += 1
         self.next_player()
         if self.round() >= 2*self.size()-1:
-            self.check_win()
+            _, winner = self.check_win()
+        self.who_wins(winner)
+
+    # def computer_move(self,)
