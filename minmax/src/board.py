@@ -151,38 +151,6 @@ class Board:
             print(line)
         print('\n-----------------------------')
 
-    # def check_win(self):
-    #     for i in range(self._size):
-    #         row_count = 0
-    #         col_count = 0
-    #         diag_up_count = 0
-    #         diag_down_count = 0
-
-    #         for j in range(self._size):
-    #             if self.board[i][j] == self.board[i][0]:
-    #                 if self.board[i][j] != "":
-    #                     row_count += 1
-    #             if self.board[j][i] == self.board[0][i]:
-    #                 if self.board[j][i] != "":
-    #                     col_count += 1
-    #             if self.board[j][j] == self.board[0][0]:
-    #                 if self.board[j][j] != "":
-    #                     diag_up_count += 1
-    #             if self.board[-(j+1)][j] == self.board[0][-1]:
-    #                 if self.board[-(j+1)][j] != "":
-    #                     diag_down_count += 1
-
-    #         if row_count == self._size:
-    #             self._is_finished = True
-    #         if col_count == self._size:
-    #             self._is_finished = True
-    #         if diag_up_count == self._size:
-    #             self._is_finished = True
-    #         if diag_down_count == self._size:
-    #             self._is_finished = True
-    #         if self._is_finished:
-    #             self.next_player()
-
     def check_win(self):
         size = self.size()
         state = self.board

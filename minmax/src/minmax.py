@@ -99,7 +99,6 @@ class MinMaxSolver:
                 if state[i, j] == '':
                     moves.append((i, j))
         return moves
-        # return [(i, j) for i in range(3) for j in range(3) if state[i, j] == ''] # noqa
 
     def evaluate_game(self, state: np.ndarray) -> int:
         anybody, who = self.check_win(state)
@@ -200,8 +199,6 @@ class MinMaxSolver:
                     score = self.alpha_pruning(next_state, self.depth, False)
                 else:
                     score = self.minmax(next_state, self.depth, False)
-                # score = self.minmax(next_state, DEPTH, False)
-                # score = self.alpha_pruning(next_state, DEPTH, False)
                 if score > best_score:
                     best_score = score
                     best_move = move
@@ -220,8 +217,6 @@ class MinMaxSolver:
                     score = self.alpha_pruning(next_state, self.depth, True)
                 else:
                     score = self.minmax(next_state, self.depth, True)
-                # score = self.minmax(next_state, DEPTH, True)
-                # score = self.alpha_pruning(next_state, DEPTH, True)
                 if score < best_score:
                     best_score = score
                     best_move = move
@@ -249,13 +244,16 @@ def playGame(size, x_starts, depth, pruning, printer=PRINT):
             move = solver.make_best_move(state, True)
             solver.game.move(move)
         state = np.array(solver.game.board)
-    print(solver.depths_history)
-    print(solver.time_history)
+    d_history = solver.depths_history
+    t_history = solver.time_history
+    if printer:
+        print(d_history)
+        print(t_history)
     _, winner = tictactoe.check_win()
     # if printer:
     # tictactoe.print()
     del state, tictactoe, solver
-    return winner
+    return winner, d_history, t_history
 
 
 if __name__ == "__main__":
