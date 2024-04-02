@@ -41,7 +41,7 @@ def name_file() -> str:
 
 def make_test():
     content = name_file()
-    content += '\n'
+    content += "\n"
     for started in [True, False]:
         for d in range(MAX_DEPTH + 1):
             # print(f"Depth {d}")
@@ -65,20 +65,32 @@ def make_test():
     return content
 
 
-def save_results(content):
+def make_test_csv():
+    content = "depth, alpha-pruning, x_starting, visited_nodes, time, winner\n"
+    for depth in range(MAX_DEPTH + 1):
+        for alphabeta in [False, True]:
+            for started in [True, False]:
+                winner, d_hist, t_hist = playGame(
+                    size=SIZE,
+                    x_starts=started,
+                    depth=depth,
+                    pruning=alphabeta,
+                    printer=False,
+                )
+                content += f"{depth}, {alphabeta}, {started}, {d_hist}, {t_hist}, {winner}\n" # noqa
+    return content
+
+
+def save_results(
+    content: str, extension: str = "txt", location: str = "src/results/"
+):
     file_name = "src/results/"
     file_name += name_file()
-    file_name += ".txt"
+    file_name += f".{extension}"
     with open(file_name, "w+") as f:
         f.write(content)
 
 
 if __name__ == "__main__":
-    content = make_test()
-    save_results(content)
-
-    # f = "results/"
-    # f += name_file()
-    # f += ".txt"
-    # with open(f, "w") as file:
-    #     file.write(content)
+    content = make_test_csv()
+    save_results(content, "csv")
