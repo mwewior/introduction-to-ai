@@ -53,17 +53,20 @@ class Board:
             self,
             size: int = 3,
             x_starts: bool = True,
+            prints: bool = True,
             init_state: np.ndarray = np.ndarray((3, 3), dtype='U7')
             ):
+        init_state.fill('')
         self._size = size
         self._max_round = size ** 2
         self._round_count = 0
+        self.prints = prints
         self._players = ["x", "o"]
         self._x_player = x_starts
         self._o_player = not x_starts
         self._is_finished = False
-        self._print_board = self.create_print_board(self._size)
         self.board = init_state
+        self._print_board = self.create_print_board(self._size)
 
     def size(self) -> int:
         return self._size
@@ -222,12 +225,11 @@ class Board:
         return False, None
 
     def who_wins(self, winner):
-        if winner is not None:
-            print(f"\n\n'{winner}' won the game!\n")
-        if self.round() == self.max_round():
-            print('\n\nDraw!\n')
-        else:
-            pass
+        if self.prints:
+            if winner is not None:
+                print(f"\n\n'{winner}' won the game!\n")
+            if self.round() == self.max_round():
+                print('\nDraw!\n')
 
     def move(self, move=None):
         winner = None
@@ -236,13 +238,10 @@ class Board:
         else:
             (row, col) = move
         self.board[row][col] = self.current_player()
-        # self.update_print_board(row, col)
-        # if human_player:
-        self.print()
+        if self.prints:
+            self.print()
         # self._round_count += 1
         self.next_player()
         if self.round() >= 2*self.size()-1:
             _, winner = self.check_win()
         self.who_wins(winner)
-
-    # def computer_move(self,)

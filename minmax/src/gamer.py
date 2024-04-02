@@ -1,23 +1,23 @@
-from board import Board
+# from board import Board
+# from minmax import MinMaxSolver
+from minmax import playGame
 
-board = Board(3)
-board.print()
-while board.round() < board.max_round() and not board.finished():
-    winner = None
-    state = board.board
-    row, col = board.read_input()
-    state[row][col] = board.current_player()
 
-    board.update_print_board(row, col)
-    board.print()
+WAGES = [
+    [3, 2, 3],
+    [2, 4, 2],
+    [3, 2, 3]
+]
 
-    board._round_count += 1
-    board.next_player()
+PRINT = False
+SIZE = 3
+MAX_DEPTH = 8
+PRUNING = False
 
-    if board.round() >= 2*board.size()-1:
-        _, winner = board.check_win()
-    board.who_wins(winner)
-    # if winner is not None:
-    #     print(f"\n\n'{winner}' won the game!\n")
-    # if board.round() == board.max_round():
-    #     print('\n\nDraw!\n')
+for started in [True, False]:
+    for d in range(MAX_DEPTH+1):
+        print(f'\n\nDepth is {d},\n\'x\' is starting: {started}\n')
+        for alphabeta in [False, True]:
+            print(f'Alpha-pruning: {alphabeta}')
+            winner = playGame(size=SIZE, x_starts=started, depth=d, pruning=alphabeta, printer=False)
+            print(f'{winner} won the game!\n')

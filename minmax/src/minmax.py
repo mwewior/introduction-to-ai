@@ -1,4 +1,7 @@
-from board import Board
+try:
+    from board import Board
+except ModuleNotFoundError:
+    from src.board import Board
 
 import time
 import numpy as np
@@ -10,9 +13,10 @@ WAGES = [
     [3, 2, 3]
 ]
 
+PRINT = False
 SIZE = 3
 DEPTH = 3
-WITH_ALPHA = False
+PRUNING = False
 
 
 class MinMaxSolver:
@@ -20,11 +24,11 @@ class MinMaxSolver:
             self,
             game: Board,
             depth: int = DEPTH,
-            with_alpha: bool = WITH_ALPHA
+            pruning: bool = PRUNING,
             ):
         self.game = game
         self.depth = depth
-        self.with_alpha = with_alpha
+        self.pruning = pruning
         self.time_history = []
         self.current_depth = 0
         self.depths_history = []
@@ -192,7 +196,7 @@ class MinMaxSolver:
             for move in self.possible_moves(state):
                 next_state = state.copy()
                 next_state[move] = 'x'
-                if self.with_alpha:
+                if self.pruning:
                     score = self.alpha_pruning(next_state, self.depth, False)
                 else:
                     score = self.minmax(next_state, self.depth, False)
@@ -212,7 +216,7 @@ class MinMaxSolver:
             for move in self.possible_moves(state):
                 next_state = state.copy()
                 next_state[move] = 'o'
-                if self.with_alpha:
+                if self.pruning:
                     score = self.alpha_pruning(next_state, self.depth, True)
                 else:
                     score = self.minmax(next_state, self.depth, True)
@@ -228,10 +232,11 @@ class MinMaxSolver:
             return best_move
 
 
-if __name__ == "__main__":
-    tictactoe = Board(SIZE, x_starts=False)
-    solver = MinMaxSolver(tictactoe)
-    tictactoe.print()
+def playGame(size, x_starts, depth, pruning, printer=PRINT):
+    tictactoe = Board(size, x_starts=x_starts, prints=printer)
+    solver = MinMaxSolver(tictactoe, depth, pruning)
+    if printer:
+        tictactoe.print()
     state = np.array(solver.game.board)
     size = state.size
     while solver.game.round() < size and not solver.game.finished():
@@ -246,3 +251,12 @@ if __name__ == "__main__":
         state = np.array(solver.game.board)
     print(solver.depths_history)
     print(solver.time_history)
+    _, winner = tictactoe.check_win()
+    # if printer:
+    # tictactoe.print()
+    del state, tictactoe, solver
+    return winner
+
+
+if __name__ == "__main__":
+    playGame(size=SIZE, depth=3, pruning=PRUNING, printer=PRINT)
