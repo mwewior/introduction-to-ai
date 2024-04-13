@@ -49,6 +49,15 @@ class Board:
                 # self._simple_board[row][col] = ''
         return plain_board
 
+    def level(self, state):
+        level = 0
+        size = state.shape[0]
+        for i in range(size):
+            for j in range(size):
+                if state[i][j] == 'o' or state[i][j] == 'x':
+                    level += 1
+        return level
+
     def __init__(
             self,
             size: int = 3,
@@ -60,7 +69,7 @@ class Board:
         # init_state.fill('')
         self._size = size
         self._max_round = size ** 2
-        self._round_count = 0
+        self._round_count = self.level(init_state)
         self.prints = prints
         self._players = ["x", "o"]
         self._x_player = x_starts

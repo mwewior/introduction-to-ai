@@ -5,6 +5,7 @@ except ModuleNotFoundError:
 
 import time
 import numpy as np
+import copy
 
 
 class WrongCharError(Exception):
@@ -12,9 +13,9 @@ class WrongCharError(Exception):
 
 
 WAGES = [
-    [3, 2, 3],
-    [2, 4, 2],
-    [3, 2, 3]
+    [30, 20, 30],
+    [20, 40, 20],
+    [30, 20, 30]
 ]
 
 PRINT = False
@@ -110,9 +111,18 @@ class MinMaxSolver:
         if not anybody:
             return self.heurisic(state)
         if who == 'x':
-            return 100
+            return 1000
         if who == 'o':
-            return -100
+            return -1000
+
+    def count_score(self, state):
+        depth_score = self.level(state) - self.level(self.game.board)
+        eval_score = self.evaluate_game(state)
+        sign = 1
+        if eval_score < 0:
+            sign = -1
+        score = sign*(abs(eval_score)+(10-depth_score))
+        return score
 
     def minmax(
         self,
@@ -129,24 +139,27 @@ class MinMaxSolver:
             depth == 0 or
             self.level(state) == max_level
                 ):
-            depth_score = self.level(state)
-            return self.evaluate_game(state), depth_score
+            score = self.count_score(state)
+            return score
+
         if maximizing:
             best_score = -1*np.inf
             for move in self.possible_moves(state):
                 next_state = state.copy()
                 next_state[move] = 'x'
-                next_score, depth_score = self.minmax(next_state, depth-1, not maximizing)
+                next_score = self.minmax(
+                    next_state, depth-1, not maximizing)
                 best_score = max(best_score, next_score)
-            return best_score, depth_score
+            return best_score
         if not maximizing:
             best_score = np.inf
             for move in self.possible_moves(state):
                 next_state = state.copy()
                 next_state[move] = 'o'
-                next_score, depth_score = self.minmax(next_state, depth-1, not maximizing)
+                next_score = self.minmax(
+                    next_state, depth-1, not maximizing)
                 best_score = min(best_score, next_score)
-            return best_score, depth_score
+            return best_score
 
     def alpha_pruning(
         self,
@@ -164,33 +177,38 @@ class MinMaxSolver:
             depth == 0 or
             self.level(state) == max_level
                 ):
-            depth_score = self.level(state)
-            return self.evaluate_game(state), depth_score
+            depth_score = self.level(state) - self.level(self.game.board)
+            eval_score = self.evaluate_game(state)
+            sign = 1
+            if eval_score < 0:
+                sign = -1
+            score = sign*abs(eval_score+depth_score)
+            return score
 
         if maximizing:
             best_score = -1*np.inf
             for move in self.possible_moves(state):
                 next_state = state.copy()
                 next_state[move] = 'x'
-                next_score, depth_score = self.alpha_pruning(
+                next_score = self.alpha_pruning(
                     next_state, depth-1, False, alpha, beta)
                 best_score = max(best_score, next_score)
                 if best_score > beta:
                     break
                 alpha = max(alpha, best_score)
-            return best_score, depth_score
+            return best_score
         if not maximizing:
             best_score = np.inf
             for move in self.possible_moves(state):
                 next_state = state.copy()
                 next_state[move] = 'o'
-                next_score, depth_score = self.alpha_pruning(
+                next_score = self.alpha_pruning(
                     next_state, depth-1, True, alpha, beta)
                 best_score = min(best_score, next_score)
                 if best_score < alpha:
                     break
                 beta = min(beta, best_score)
-            return best_score, depth_score
+            return best_score
 
     def make_best_move(self, state, current_player: str):
         best_move = None
@@ -201,31 +219,28 @@ class MinMaxSolver:
             maximizing = False
         else:
             raise WrongCharError
-        best_depth_score = 10
         if maximizing:
             best_score = -1*np.inf
             tic = time.time()
             for move in self.possible_moves(state):
                 next_state = state.copy()
                 next_state[move] = 'x'
-                depth_score = 0
                 if self.pruning:
-                    score, depth_score = self.alpha_pruning(next_state, self.depth, False)
+                    score = self.alpha_pruning(
+                        next_state, self.depth, False)
                 else:
-                    score, depth_score = self.minmax(next_state, self.depth, False)
+                    score = self.minmax(
+                        next_state, self.depth, False)
                 if score > best_score:
                     best_score = score
                     best_move = move
-                if score == best_score:
-                    if depth_score < best_depth_score:
-                        best_score = score
-                        best_move = move
 
             toc = time.time()
             elapsed_time = toc - tic
             self.time_history.append(round(1000*elapsed_time, 5))
             self.nodes_history.append(self.visited_nodes)
             self.moves_history.append(best_move)
+            print(score)
             return best_move
         if not maximizing:
             best_score = np.inf
@@ -233,34 +248,36 @@ class MinMaxSolver:
             for move in self.possible_moves(state):
                 next_state = state.copy()
                 next_state[move] = 'o'
-                depth_score = 0
                 if self.pruning:
-                    score, depth_score = self.alpha_pruning(next_state, self.depth, True)
+                    score = self.alpha_pruning(
+                        next_state, self.depth, True)
                 else:
-                    score, depth_score = self.minmax(next_state, self.depth, True)
+                    score = self.minmax(
+                        next_state, self.depth, True)
                 if score < best_score:
                     best_score = score
                     best_move = move
-                if score == best_score:
-                    if depth_score < best_depth_score:
-                        best_score = score
-                        best_move = move
             toc = time.time()
             elapsed_time = toc - tic
             self.time_history.append(round(1000*elapsed_time, 5))
             self.nodes_history.append(self.visited_nodes)
             self.moves_history.append(best_move)
+            print(score)
             return best_move
 
 
-def playGame(size, x_starts, depth, pruning, printer=PRINT):
-    tictactoe = Board(size, x_starts=x_starts, prints=printer)
+def playGame(size, x_starts, depth, pruning, printer=PRINT, state=None):
+    if state is None:
+        tictactoe = Board(size, x_starts=x_starts, prints=printer)
+    else:
+        tictactoe = Board(
+            size, x_starts=x_starts, prints=printer, init_state=state)
     solver = MinMaxSolver(tictactoe, depth, pruning)
     if printer:
         tictactoe.print()
     state = np.array(solver.game.board)
-    size = state.size
-    while solver.game.round() < size and not solver.game.finished():
+    state_size = state.size
+    while solver.game.round() < state_size and not solver.game.finished():
         if solver.game._o_player:
             # tictactoe.move()
             move = solver.make_best_move(state, 'o')
@@ -270,6 +287,7 @@ def playGame(size, x_starts, depth, pruning, printer=PRINT):
             move = solver.make_best_move(state, 'x')
             solver.game.move(move)
         state = np.array(solver.game.board)
+        solver.game.check_win()
     d_history = solver.nodes_history
     t_history = solver.time_history
     m_history = solver.moves_history
@@ -283,21 +301,20 @@ def playGame(size, x_starts, depth, pruning, printer=PRINT):
     del state, tictactoe, solver
     return winner, d_history, t_history, m_history
 
-# def playGame(
-#         state_or_size,
-#         x_starts: bool,
-#         depth: int,
-#         pruning: bool,
-#         printer: bool = PRINT):
-#     if type(state_or_size) is int:
-#         tictactoe = Board(state_or_size, x_starts=x_starts, prints=printer)
-#     if type(state_or_size) is list:
-#         tictactoe = Board(
-#             len(state_or_size),
-#             x_starts=x_starts,
-#             prints=printer,
-#             state=state_or_size)
-
 
 if __name__ == "__main__":
-    playGame(size=SIZE, x_starts=True, depth=3, pruning=True, printer=True)
+
+    init_state = [
+        ['', '', 'x'],
+        ['', 'o', ''],
+        ['o', '', 'x']
+    ]
+    state = copy.deepcopy(init_state)
+    state = np.array(state)
+    playGame(
+        size=SIZE,
+        x_starts=False,
+        depth=3,
+        pruning=False,
+        printer=True,
+        state=state)
