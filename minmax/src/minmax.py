@@ -7,6 +7,10 @@ import time
 import numpy as np
 
 
+class WrongCharError(Exception):
+    pass
+
+
 WAGES = [
     [3, 2, 3],
     [2, 4, 2],
@@ -30,8 +34,9 @@ class MinMaxSolver:
         self.depth = depth
         self.pruning = pruning
         self.time_history = []
-        self.current_depth = 0
-        self.depths_history = []
+        self.visited_nodes = 0
+        self.nodes_history = []
+        self.moves_history = []
 
     def heurisic(self, state: np.ndarray):
         score = 0
@@ -117,31 +122,31 @@ class MinMaxSolver:
         maximizing: bool,
     ) -> int:
 
-        self.current_depth += 1
+        self.visited_nodes += 1
         max_level = state.size
         if (
             self.check_win(state)[0] or
             depth == 0 or
             self.level(state) == max_level
                 ):
-            return self.evaluate_game(state)
-
+            depth_score = self.level(state)
+            return self.evaluate_game(state), depth_score
         if maximizing:
             best_score = -1*np.inf
             for move in self.possible_moves(state):
                 next_state = state.copy()
                 next_state[move] = 'x'
-                next_score = self.minmax(next_state, depth-1, not maximizing)
+                next_score, depth_score = self.minmax(next_state, depth-1, not maximizing)
                 best_score = max(best_score, next_score)
-            return best_score
+            return best_score, depth_score
         if not maximizing:
             best_score = np.inf
             for move in self.possible_moves(state):
                 next_state = state.copy()
                 next_state[move] = 'o'
-                next_score = self.minmax(next_state, depth-1, not maximizing)
+                next_score, depth_score = self.minmax(next_state, depth-1, not maximizing)
                 best_score = min(best_score, next_score)
-            return best_score
+            return best_score, depth_score
 
     def alpha_pruning(
         self,
@@ -152,60 +157,75 @@ class MinMaxSolver:
         alpha: int = -np.inf,
         beta: int = np.inf,
     ) -> int:
-        self.current_depth += 1
+        self.visited_nodes += 1
         max_level = state.size
         if (
             self.check_win(state)[0] or
             depth == 0 or
             self.level(state) == max_level
                 ):
-            return self.evaluate_game(state)
+            depth_score = self.level(state)
+            return self.evaluate_game(state), depth_score
 
         if maximizing:
             best_score = -1*np.inf
             for move in self.possible_moves(state):
                 next_state = state.copy()
                 next_state[move] = 'x'
-                next_score = self.alpha_pruning(
+                next_score, depth_score = self.alpha_pruning(
                     next_state, depth-1, False, alpha, beta)
                 best_score = max(best_score, next_score)
                 if best_score > beta:
                     break
                 alpha = max(alpha, best_score)
-            return best_score
+            return best_score, depth_score
         if not maximizing:
             best_score = np.inf
             for move in self.possible_moves(state):
                 next_state = state.copy()
                 next_state[move] = 'o'
-                next_score = self.alpha_pruning(
+                next_score, depth_score = self.alpha_pruning(
                     next_state, depth-1, True, alpha, beta)
                 best_score = min(best_score, next_score)
                 if best_score < alpha:
                     break
                 beta = min(beta, best_score)
-            return best_score
+            return best_score, depth_score
 
-    def make_best_move(self, state, maximizing):
+    def make_best_move(self, state, current_player: str):
         best_move = None
-        self.current_depth = 0
+        self.visited_nodes = 0
+        if current_player == 'x':
+            maximizing = True
+        elif current_player == 'o':
+            maximizing = False
+        else:
+            raise WrongCharError
+        best_depth_score = 10
         if maximizing:
             best_score = -1*np.inf
             tic = time.time()
             for move in self.possible_moves(state):
                 next_state = state.copy()
                 next_state[move] = 'x'
+                depth_score = 0
                 if self.pruning:
-                    score = self.alpha_pruning(next_state, self.depth, False)
+                    score, depth_score = self.alpha_pruning(next_state, self.depth, False)
                 else:
-                    score = self.minmax(next_state, self.depth, False)
+                    score, depth_score = self.minmax(next_state, self.depth, False)
                 if score > best_score:
                     best_score = score
                     best_move = move
+                if score == best_score:
+                    if depth_score < best_depth_score:
+                        best_score = score
+                        best_move = move
+
             toc = time.time()
             elapsed_time = toc - tic
             self.time_history.append(round(1000*elapsed_time, 5))
-            self.depths_history.append(self.current_depth)
+            self.nodes_history.append(self.visited_nodes)
+            self.moves_history.append(best_move)
             return best_move
         if not maximizing:
             best_score = np.inf
@@ -213,17 +233,23 @@ class MinMaxSolver:
             for move in self.possible_moves(state):
                 next_state = state.copy()
                 next_state[move] = 'o'
+                depth_score = 0
                 if self.pruning:
-                    score = self.alpha_pruning(next_state, self.depth, True)
+                    score, depth_score = self.alpha_pruning(next_state, self.depth, True)
                 else:
-                    score = self.minmax(next_state, self.depth, True)
+                    score, depth_score = self.minmax(next_state, self.depth, True)
                 if score < best_score:
                     best_score = score
                     best_move = move
+                if score == best_score:
+                    if depth_score < best_depth_score:
+                        best_score = score
+                        best_move = move
             toc = time.time()
             elapsed_time = toc - tic
             self.time_history.append(round(1000*elapsed_time, 5))
-            self.depths_history.append(self.current_depth)
+            self.nodes_history.append(self.visited_nodes)
+            self.moves_history.append(best_move)
             return best_move
 
 
@@ -237,24 +263,41 @@ def playGame(size, x_starts, depth, pruning, printer=PRINT):
     while solver.game.round() < size and not solver.game.finished():
         if solver.game._o_player:
             # tictactoe.move()
-            move = solver.make_best_move(state, False)
+            move = solver.make_best_move(state, 'o')
             solver.game.move(move)
         elif solver.game._x_player:
             # tictactoe.move()
-            move = solver.make_best_move(state, True)
+            move = solver.make_best_move(state, 'x')
             solver.game.move(move)
         state = np.array(solver.game.board)
-    d_history = solver.depths_history
+    d_history = solver.nodes_history
     t_history = solver.time_history
+    m_history = solver.moves_history
     if printer:
         print(d_history)
         print(t_history)
+        print(m_history)
     _, winner = tictactoe.check_win()
     # if printer:
     # tictactoe.print()
     del state, tictactoe, solver
-    return winner, d_history, t_history
+    return winner, d_history, t_history, m_history
+
+# def playGame(
+#         state_or_size,
+#         x_starts: bool,
+#         depth: int,
+#         pruning: bool,
+#         printer: bool = PRINT):
+#     if type(state_or_size) is int:
+#         tictactoe = Board(state_or_size, x_starts=x_starts, prints=printer)
+#     if type(state_or_size) is list:
+#         tictactoe = Board(
+#             len(state_or_size),
+#             x_starts=x_starts,
+#             prints=printer,
+#             state=state_or_size)
 
 
 if __name__ == "__main__":
-    playGame(size=SIZE, depth=3, pruning=PRUNING, printer=PRINT)
+    playGame(size=SIZE, x_starts=True, depth=3, pruning=True, printer=True)

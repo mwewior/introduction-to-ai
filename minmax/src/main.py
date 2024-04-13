@@ -66,18 +66,18 @@ def make_test():
 
 
 def make_test_csv():
-    content = "depth, alpha-pruning, x_starting, visited_nodes, time, winner\n"
+    content = "depth, alpha-pruning, x_starting, visited_nodes, time, moves, winner\n" # noqa
     for depth in range(MAX_DEPTH + 1):
         for alphabeta in [False, True]:
             for started in [True, False]:
-                winner, d_hist, t_hist = playGame(
+                winner, d_hist, t_hist, m_hist = playGame(
                     size=SIZE,
                     x_starts=started,
                     depth=depth,
                     pruning=alphabeta,
                     printer=False,
                 )
-                content += f"{depth}, {alphabeta}, {started}, {d_hist}, {t_hist}, {winner}\n" # noqa
+                content += f"{depth}, {alphabeta}, {started}, {d_hist}, {t_hist}, {m_hist}, {winner}\n" # noqa
     return content
 
 
@@ -92,5 +92,12 @@ def save_results(
 
 
 if __name__ == "__main__":
-    content = make_test_csv()
-    save_results(content, "csv")
+    for _ in range(5):
+        print(f'Test #{_+1}:')
+        tic = time.perf_counter()
+        content = make_test_csv()
+        toc = time.perf_counter()
+        elapsed_time = toc - tic
+        print(f'took {elapsed_time} seconds.\n')
+        save_results(content, "csv")
+        del content

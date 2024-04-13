@@ -54,9 +54,10 @@ class Board:
             size: int = 3,
             x_starts: bool = True,
             prints: bool = True,
-            init_state: np.ndarray = np.ndarray((3, 3), dtype='U7')
+            # init_state: np.ndarray = np.ndarray((3, 3), dtype='U7')
+            init_state: np.ndarray = np.full((3, 3), '')
             ):
-        init_state.fill('')
+        # init_state.fill('')
         self._size = size
         self._max_round = size ** 2
         self._round_count = 0
@@ -199,13 +200,16 @@ class Board:
             if self.round() == self.max_round():
                 print('\nDraw!\n')
 
-    def move(self, move=None):
+    def move(self, move=None, player=None):
         winner = None
         if move is None:
             row, col = self.read_input()
         else:
             (row, col) = move
-        self.board[row][col] = self.current_player()
+        if player is None:
+            self.board[row][col] = self.current_player()
+        else:
+            self.board[row][col] = player
         if self.prints:
             self.print()
         # self._round_count += 1
