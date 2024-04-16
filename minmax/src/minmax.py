@@ -240,7 +240,6 @@ class MinMaxSolver:
             self.time_history.append(round(1000*elapsed_time, 5))
             self.nodes_history.append(self.visited_nodes)
             self.moves_history.append(best_move)
-            print(score)
             return best_move
         if not maximizing:
             best_score = np.inf
@@ -262,7 +261,6 @@ class MinMaxSolver:
             self.time_history.append(round(1000*elapsed_time, 5))
             self.nodes_history.append(self.visited_nodes)
             self.moves_history.append(best_move)
-            print(score)
             return best_move
 
 
@@ -304,10 +302,11 @@ def playGame(size, x_starts, depth, pruning, printer=PRINT, state=None):
 
 if __name__ == "__main__":
 
+    # playGame(size=3, x_starts=True, depth=8, pruning=False, printer=True)
     init_state = [
-        ['', '', 'x'],
-        ['', 'o', ''],
-        ['o', '', 'x']
+        ['x', '', ''],
+        ['', '', ''],
+        ['', '', '']
     ]
     state = copy.deepcopy(init_state)
     state = np.array(state)
@@ -315,6 +314,6 @@ if __name__ == "__main__":
         size=SIZE,
         x_starts=False,
         depth=3,
-        pruning=False,
+        pruning=True,
         printer=True,
         state=state)

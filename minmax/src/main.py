@@ -1,7 +1,10 @@
-# from board import Board
-# from minmax import MinMaxSolver
+from board import Board
+from minmax import MinMaxSolver
 from minmax import playGame
+
 import time
+import copy
+import numpy as np
 
 
 WAGES = [
@@ -65,6 +68,44 @@ def make_test():
     return content
 
 
+def single_test(init_state, player, pruning, depth):
+    state = copy.deepcopy(init_state)
+    state = np.array(state)
+    tictactoe = Board(len(state), x_starts=False, prints=False, init_state=state) # noqa
+    minmax = MinMaxSolver(tictactoe, depth=depth, pruning=pruning)
+    move = minmax.make_best_move(state, player)
+    time = minmax.time_history[-1]
+    node = minmax.nodes_history  # [-1]
+    del state
+    print(f'Move: {move} | Depth: {node} | Time: {time} ms')
+    tictactoe.move(move, player)
+    return time, node
+
+
+def experiments(init_state, player, pruning, depth):
+    timers = []
+    nodes = []
+    for _ in range(15):
+        time, node = single_test(init_state, player, pruning, depth)
+        timers.append(time)
+        nodes.append(node)
+    mean_time = np.mean(timers[3:13])
+    deviatation_time = np.std(timers[3:13])
+    mean_nodes = np.mean(nodes[3:13])
+    deviatation_nodes = np.std(nodes[3:13])
+    stats = {
+        "time": {
+            "mean": mean_time,
+            "deviatation": deviatation_time
+        },
+        "nodes": {
+            "mean": mean_nodes,
+            "deviatation": deviatation_nodes
+        },
+    }
+    return stats
+
+
 def make_test_csv():
     content = "depth, alpha-pruning, x_starting, visited_nodes, time, moves, winner\n" # noqa
     for depth in range(MAX_DEPTH + 1):
@@ -91,13 +132,13 @@ def save_results(
         f.write(content)
 
 
-if __name__ == "__main__":
-    for _ in range(5):
-        print(f'Test #{_+1}:')
-        tic = time.perf_counter()
-        content = make_test_csv()
-        toc = time.perf_counter()
-        elapsed_time = toc - tic
-        print(f'took {elapsed_time} seconds.\n')
-        save_results(content, "csv")
-        del content
+# if __name__ == "__main__":
+#     for _ in range(5):
+#         print(f'Test #{_+1}:')
+#         tic = time.perf_counter()
+#         content = make_test_csv()
+#         toc = time.perf_counter()
+#         elapsed_time = toc - tic
+#         print(f'took {elapsed_time} seconds.\n')
+#         save_results(content, "csv")
+#         del content
