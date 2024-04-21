@@ -277,9 +277,9 @@ def playGame(size, x_starts, depth, pruning, printer=PRINT, state=None):
     state_size = state.size
     while solver.game.round() < state_size and not solver.game.finished():
         if solver.game._o_player:
-            # tictactoe.move()
-            move = solver.make_best_move(state, 'o')
-            solver.game.move(move)
+            tictactoe.move()
+            # move = solver.make_best_move(state, 'o')
+            # solver.game.move(move)
         elif solver.game._x_player:
             # tictactoe.move()
             move = solver.make_best_move(state, 'x')
@@ -290,7 +290,7 @@ def playGame(size, x_starts, depth, pruning, printer=PRINT, state=None):
     t_history = solver.time_history
     m_history = solver.moves_history
     if printer:
-        print(d_history)
+        # print(d_history)
         print(t_history)
         print(m_history)
     _, winner = tictactoe.check_win()
@@ -304,7 +304,7 @@ if __name__ == "__main__":
 
     # playGame(size=3, x_starts=True, depth=8, pruning=False, printer=True)
     init_state = [
-        ['x', '', ''],
+        ['', '', ''],
         ['', '', ''],
         ['', '', '']
     ]
@@ -312,8 +312,8 @@ if __name__ == "__main__":
     state = np.array(state)
     playGame(
         size=SIZE,
-        x_starts=False,
+        x_starts=True,
         depth=3,
-        pruning=True,
+        pruning=False,
         printer=True,
         state=state)
