@@ -41,31 +41,56 @@ class DataSet:
         return self.__convertAbstract(vector, backward_dict)
 
     def splitData(self, DataFrame):
-        features = np.array([[-1.0, -1.0, -1.0, -1.0]], dtype="float64")
-        target = np.array([-1], dtype="int64")
+        # features = np.array([[-1.0, -1.0, -1.0, -1.0]], dtype="float64")
+        # target = np.array([-1], dtype="int64")
 
+        features = []
+        targets = []
         for subset in DataFrame:
-            features = np.concatenate((features, subset.to_numpy()[:, 0:4]))
-            target = np.concatenate((target, subset.to_numpy()[:, -1]))
+            features.append(
+                np.array(subset.to_numpy()[:, 0:4], dtype='float64')
+            )
+            targets.append(
+                np.array(subset.to_numpy()[:, -1], dtype='int64')
+            )
 
-        features = features[1:]
-        target = target[1:]
+        # features = features[1:]
+        # target = target[1:]
 
-        features = features.astype(dtype="float64")
-        target = target.astype(dtype="int64")
+        # features = features.astype(dtype="float64")
+        # targets = targets.astype(dtype="int64")
 
-        return features, target
+        return features, targets
+
+    def joinData(self, DataFrame: np.array):
+        FrameType = DataFrame[0].dtype
+        outputArray = np.array([DataFrame[0][0]], dtype=FrameType)
+        for subset in DataFrame:
+            outputArray = np.concatenate((outputArray, subset))
+        outputArray = outputArray[1:]
+        outputArray = outputArray.astype(dtype=FrameType)
+        return outputArray
 
     def __init__(self, K: int = 5) -> None:
         dataset = self.get_data()
         original = dataset.original
         trans_target = self.convertNameToInt(original["class"])
+
         original.loc[:, "class"] = np.array(trans_target)
         shuffled = dataset.original.sample(frac=1)
         groupedSets = np.array_split(shuffled, K + 1)
 
         self.testData = groupedSets.pop(-1)
-        self.testTarget = self.testData["class"]
-
         self.trainData = groupedSets
+
         self.trainFeatures, self.trainTarget = self.splitData(self.trainData)
+        self.joinedTrainFeatures = self.joinData(self.trainFeatures)
+        self.joinedTrainTarget = self.joinData(self.trainTarget)
+
+        self.testFeatures = np.array(
+            self.testData.to_numpy()[:, 0:4], dtype='float64')
+        self.testTarget = np.array(
+            self.testData.to_numpy()[:, -1], dtype='int64')
+        # self.testFeatures, self.testTarget = self.splitData(self.testData)
+        # self.testFeatures = self.joinData(self.testFeatures)
+        # self.testTarget = self.joinData(self.testTarget)
