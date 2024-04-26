@@ -10,8 +10,7 @@ import numpy as np
 - maks. głębokość drzewa
 """
 
-
-clf = DecisionTreeClassifier(criterion="entropy", splitter="best", max_depth=2)
+clf = DecisionTreeClassifier(criterion="entropy", splitter="best", max_depth=6)
 
 ds = DataSet(K=5)
 
@@ -20,35 +19,36 @@ iris = load_iris()
 irisData = iris.data
 irisTarget = iris.target
 
-print(irisData)
-print(irisTarget)
-scoresOrigin = cross_val_score(clf, iris.data, iris.target, cv=5)
-print(scoresOrigin)
-
-# trainData = np.array([[]], dtype='float64')
 trainDataAll = ds.trainData
-i = 0
+
+trainData = np.array([[-1.0, -1.0, -1.0, -1.0]], dtype='float64')
+target = np.array([-1], dtype='int64')
+
 for subset in trainDataAll:
-    if i == 0:
-        trainData = subset.to_numpy()[:, 0:4]
-        target = subset.to_numpy()[:, -1]
-    else:
-        trainData = np.concatenate((trainData, subset.to_numpy()[:, 0:4]))
-        target = np.concatenate((target, subset.to_numpy()[:, -1]))
-    i += 1
-# target = ds.trainTarget
+    trainData = np.concatenate((trainData, subset.to_numpy()[:, 0:4]))
+    target = np.concatenate((target, subset.to_numpy()[:, -1]))
+
+trainData = trainData[1:]
+target = target[1:]
+
+trainData = trainData.astype(dtype='float64')
+target = target.astype(dtype='int64')
+
+
+print(irisData)
+print('\n')
+print(irisTarget)
+
+print(f'\n\n{"-"*100}\n{"="*100}\n{"-"*100}\n\n')
 
 print(trainData)
+print('\n')
 print(target)
+
+
+scoresOrigin = cross_val_score(clf, iris.data, iris.target, cv=5)
+print(f'\n\n{scoresOrigin}\n\n')
 scoresMy = cross_val_score(clf, trainData, target, cv=5)
-print(scoresMy)
+print(f'\n\n{scoresMy}\n\n')
 
 # Dlaczego to wywala błąd?
-
-
-# dataset = DataSet(K=5)
-# data = dataset.test_group
-# data_target = dataset.convert(data[['class']])
-# data[['class']] = data_target
-# dataset.cross_group[2].iloc[:, -1]
-# cross_val_score(clf, dataset.test_group, dataset.test_group[['class']])

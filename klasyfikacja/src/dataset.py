@@ -47,11 +47,9 @@ class DataSet:
         self.testData = groupedSets.pop(-1)
         self.testTarget = self.testData['class']
         self.trainData = groupedSets
-        # self.trainTarget = self.trainData['class']
         self.trainTarget = copy.deepcopy(groupedSets)
         for i in range(K):
             currTarget = self.trainData[i]['class']
-            # self.trainTarget.loc[:, 'class'] = np.array(currTarget)
             self.trainTarget[i] = currTarget
 
 
