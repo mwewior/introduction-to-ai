@@ -1,8 +1,8 @@
 from ucimlrepo import fetch_ucirepo
 
-import copy
-# import pandas as pd
 import numpy as np
+# import pandas as pd
+# import copy
 
 np.random.seed(318407)
 
@@ -37,6 +37,22 @@ class DataSet:
         }
         return self.__convertAbstract(vector, backward_dict)
 
+    def splitData(self, DataFrame):
+        features = np.array([[-1.0, -1.0, -1.0, -1.0]], dtype='float64')
+        target = np.array([-1], dtype='int64')
+
+        for subset in DataFrame:
+            features = np.concatenate((features, subset.to_numpy()[:, 0:4]))
+            target = np.concatenate((target, subset.to_numpy()[:, -1]))
+
+        features = features[1:]
+        target = target[1:]
+
+        features = features.astype(dtype='float64')
+        target = target.astype(dtype='int64')
+
+        return features, target
+
     def __init__(self, K: int = 5) -> None:
         dataset = self.get_data()
         original = dataset.original
@@ -44,74 +60,9 @@ class DataSet:
         original.loc[:, 'class'] = np.array(trans_target)
         shuffled = dataset.original.sample(frac=1)
         groupedSets = np.array_split(shuffled, K + 1)
+
         self.testData = groupedSets.pop(-1)
         self.testTarget = self.testData['class']
+
         self.trainData = groupedSets
-        self.trainTarget = copy.deepcopy(groupedSets)
-        for i in range(K):
-            currTarget = self.trainData[i]['class']
-            self.trainTarget[i] = currTarget
-
-
-# ds = DataSet(K=5)
-# groupT = ds.testData
-# groupC = ds.trainData
-# targetT = ds.testTarget
-# targetC = ds.trainTarget
-
-# c0 = groupC[0]
-# c1 = groupC[1]
-# c2 = groupC[2]
-# c3 = groupC[3]
-# c4 = groupC[4]
-
-# c0targ = targetC[0]
-# c1targ = targetC[1]
-# c2targ = targetC[2]
-# c3targ = targetC[3]
-# c4targ = targetC[4]
-
-# print("night\n\n")
-# print(groupT)
-# print("\n\n ---------------------------------------------------- \n\n")
-# print(c0)
-# print("\n\n ---------------------------------------------------- \n\n")
-# print(c1)
-# print("\n\n ---------------------------------------------------- \n\n")
-# print(c2)
-# print("\n\n ---------------------------------------------------- \n\n")
-# print(c3)
-# print("\n\n ---------------------------------------------------- \n\n")
-# print(c4)
-# print("\n\n -------------------------------------------------------------------------------------------------------- \n\n\n\n") # noqa
-# print(targetT)
-# print("\n\n ---------------------------------------------------- \n\n")
-# print(c0targ)
-# print("\n\n ---------------------------------------------------- \n\n")
-# print(c1targ)
-# print("\n\n ---------------------------------------------------- \n\n")
-# print(c2targ)
-# print("\n\n ---------------------------------------------------- \n\n")
-# print(c3targ)
-# print("\n\n ---------------------------------------------------- \n\n")
-# print(c4targ)
-# print("\n\n -------------------------------------------------------------------------------------------------------- \n\n\n\n") # noqa
-
-
-# def learning():
-#     # tutaj to jakoś się uczy, daje parametry potem
-#     return 0
-
-
-# def testing():
-#     # dla uzyskanych parametrów klasyfikacji przeprowadzamy
-#     # badanie na danych testowych i oceniamy jakość
-#     return 0
-
-
-# parameters = []
-# for i in range(K):
-#     cross_group = copy.deepcopy(train_group)
-#     validation_group = cross_group.pop(i)
-#     parameters.append(learning())
-# test_results = testing()
+        self.trainFeatures, self.trainTarget = self.splitData(self.trainData)
