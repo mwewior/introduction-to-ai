@@ -1,14 +1,17 @@
 from ucimlrepo import fetch_ucirepo
 
 import numpy as np
+
 # import pandas as pd
 # import copy
 
-np.random.seed(318407)
+seed = 318407
+# seed = 271102
+# seed = 231219
+np.random.seed(seed)
 
 
 class DataSet:
-
     def get_data(self, id: int = 53):
         iris = fetch_ucirepo(id=id)
         dataset = iris.data
@@ -23,23 +26,23 @@ class DataSet:
 
     def convertNameToInt(self, vector):
         forward_dict = {
-            'Iris-setosa': 0,
-            'Iris-versicolor': 1,
-            'Iris-virginica': 2
+            "Iris-setosa": 0,
+            "Iris-versicolor": 1,
+            "Iris-virginica": 2,
         }
         return self.__convertAbstract(vector, forward_dict)
 
     def convertIntToName(self, vector):
         backward_dict = {
-            0: 'Iris-setosa',
-            1: 'Iris-versicolor',
-            2: 'Iris-virginica'
+            0: "Iris-setosa",
+            1: "Iris-versicolor",
+            2: "Iris-virginica",
         }
         return self.__convertAbstract(vector, backward_dict)
 
     def splitData(self, DataFrame):
-        features = np.array([[-1.0, -1.0, -1.0, -1.0]], dtype='float64')
-        target = np.array([-1], dtype='int64')
+        features = np.array([[-1.0, -1.0, -1.0, -1.0]], dtype="float64")
+        target = np.array([-1], dtype="int64")
 
         for subset in DataFrame:
             features = np.concatenate((features, subset.to_numpy()[:, 0:4]))
@@ -48,21 +51,21 @@ class DataSet:
         features = features[1:]
         target = target[1:]
 
-        features = features.astype(dtype='float64')
-        target = target.astype(dtype='int64')
+        features = features.astype(dtype="float64")
+        target = target.astype(dtype="int64")
 
         return features, target
 
     def __init__(self, K: int = 5) -> None:
         dataset = self.get_data()
         original = dataset.original
-        trans_target = self.convertNameToInt(original['class'])
-        original.loc[:, 'class'] = np.array(trans_target)
+        trans_target = self.convertNameToInt(original["class"])
+        original.loc[:, "class"] = np.array(trans_target)
         shuffled = dataset.original.sample(frac=1)
         groupedSets = np.array_split(shuffled, K + 1)
 
         self.testData = groupedSets.pop(-1)
-        self.testTarget = self.testData['class']
+        self.testTarget = self.testData["class"]
 
         self.trainData = groupedSets
         self.trainFeatures, self.trainTarget = self.splitData(self.trainData)
