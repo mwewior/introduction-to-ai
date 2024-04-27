@@ -1,40 +1,48 @@
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import SVC
+import numpy as np
 
 from dataset import DataSet
 
+FOLDS = 5
 
 clfTree = DecisionTreeClassifier(
-    criterion="entropy", splitter="best", max_depth=6
+    criterion="entropy", splitter="best", max_depth=5
 )
 
 clfSVM = SVC(
     C=1, kernel="poly", tol=10e-16  # , max_iter=int(10e4)
 )
 
-ds = DataSet(K=5)
+ds = DataSet(K=FOLDS)
 
-trainFeatures = ds.joinedTrainFeatures
-trainTarget = ds.joinedTrainTarget
+Features = ds.trainFeatures
+Targets = ds.trainTarget
 
-singleGroupLength = len(trainTarget)//5
 
-clfSVM.fit(
-    trainFeatures[0:4*singleGroupLength],
-    trainTarget[0:4*singleGroupLength])
+clf = clfTree
+accuracies = []
+for k in range(FOLDS):
+    trainFeatures = ds.joinData(Features, k)
+    trainTargets = ds.joinData(Targets, k)
+    testFeatures = Features[k]
+    testTargets = Targets[k]
 
-print("\n\nvalidation\n")
-testPrediction = clfSVM.predict(ds.testFeatures)
-expectedTarget = ds.testTarget
+    clf.fit(trainFeatures, trainTargets)
 
-for i in range(len(expectedTarget)):
-    diff = testPrediction[i] - expectedTarget[i]
-    print(f'{diff}\t{testPrediction[i]} : {expectedTarget[i]}')
+    testPrediction = clf.predict(testFeatures)
 
-print("\n\ntest\n")
-testPrediction = clfSVM.predict(trainFeatures[4*singleGroupLength:])
-expectedValues = trainTarget[4*singleGroupLength:]
+    TP = 0
+    FN = 0
+    for i in range(len(testTargets)):
+        if (testPrediction[i] - testTargets[i]) == 0:
+            TP += 1
+        else:
+            FN += 1
+    accuracy = TP/(TP+FN)
+    accuracies.append(accuracy)
+    print(f'Fold {k}: accuracy = {accuracy}')
 
-for i in range(len(expectedValues)):
-    diff = abs(testPrediction[i] - expectedValues[i])
-    print(f'{diff}\t{testPrediction[i]} : {expectedValues[i]}')
+avgAccuracy = np.mean(accuracies)
+stddevAccuracy = np.std(accuracies)
+print(f'\nMean: {avgAccuracy}\nstandard deviation: {stddevAccuracy}')

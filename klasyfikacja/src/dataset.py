@@ -49,11 +49,15 @@ class DataSet:
             )
         return features, targets
 
-    def joinData(self, DataFrame: np.array):
+    def joinData(self, DataFrame: np.array, ommitGroupIndex: int = None):
         FrameType = DataFrame[0].dtype
         outputArray = np.array([DataFrame[0][0]], dtype=FrameType)
+        k = ommitGroupIndex
+        i = 0
         for subset in DataFrame:
-            outputArray = np.concatenate((outputArray, subset))
+            if k is None or i != k:
+                outputArray = np.concatenate((outputArray, subset))
+            i += 1
         outputArray = outputArray[1:]
         outputArray = outputArray.astype(dtype=FrameType)
         return outputArray
@@ -65,16 +69,10 @@ class DataSet:
 
         original.loc[:, "class"] = np.array(trans_target)
         shuffled = dataset.original.sample(frac=1)
-        groupedSets = np.array_split(shuffled, K + 1)
+        groupedSets = np.array_split(shuffled, K)
 
-        self.testData = groupedSets.pop(-1)
         self.trainData = groupedSets
 
         self.trainFeatures, self.trainTarget = self.splitData(self.trainData)
         self.joinedTrainFeatures = self.joinData(self.trainFeatures)
         self.joinedTrainTarget = self.joinData(self.trainTarget)
-
-        self.testFeatures = np.array(
-            self.testData.to_numpy()[:, 0:4], dtype='float64')
-        self.testTarget = np.array(
-            self.testData.to_numpy()[:, -1], dtype='int64')
