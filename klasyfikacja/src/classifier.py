@@ -1,6 +1,5 @@
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import SVC
-# from sklearn.model_selection import cross_val_score
 
 from dataset import DataSet
 
@@ -18,18 +17,7 @@ ds = DataSet(K=5)
 trainFeatures = ds.joinedTrainFeatures
 trainTarget = ds.joinedTrainTarget
 
-# scoresTree = cross_val_score(clfTree, trainFeatures, trainTarget, cv=5)
-# scoresSVM = cross_val_score(clfSVM, trainFeatures, trainTarget, cv=5)
-# print(f"\nDecision Tree: {scoresTree}\n{10*' '}SVM: {scoresSVM}\n")
-
 singleGroupLength = len(trainTarget)//5
-
-# print(len(trainTarget))
-# print(singleGroupLength)
-# print(trainFeatures)
-# print(trainTarget)
-
-print("prefit\n")
 
 clfSVM.fit(
     trainFeatures[0:4*singleGroupLength],

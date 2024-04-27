@@ -1,9 +1,6 @@
 from ucimlrepo import fetch_ucirepo
-
 import numpy as np
 
-# import pandas as pd
-# import copy
 
 seed = 318407
 # seed = 271102
@@ -41,9 +38,6 @@ class DataSet:
         return self.__convertAbstract(vector, backward_dict)
 
     def splitData(self, DataFrame):
-        # features = np.array([[-1.0, -1.0, -1.0, -1.0]], dtype="float64")
-        # target = np.array([-1], dtype="int64")
-
         features = []
         targets = []
         for subset in DataFrame:
@@ -53,13 +47,6 @@ class DataSet:
             targets.append(
                 np.array(subset.to_numpy()[:, -1], dtype='int64')
             )
-
-        # features = features[1:]
-        # target = target[1:]
-
-        # features = features.astype(dtype="float64")
-        # targets = targets.astype(dtype="int64")
-
         return features, targets
 
     def joinData(self, DataFrame: np.array):
@@ -91,6 +78,3 @@ class DataSet:
             self.testData.to_numpy()[:, 0:4], dtype='float64')
         self.testTarget = np.array(
             self.testData.to_numpy()[:, -1], dtype='int64')
-        # self.testFeatures, self.testTarget = self.splitData(self.testData)
-        # self.testFeatures = self.joinData(self.testFeatures)
-        # self.testTarget = self.joinData(self.testTarget)
