@@ -14,22 +14,32 @@ clfSVM = SVC(
     C=1, kernel="poly", tol=10e-16  # , max_iter=int(10e4)
 )
 
+"""
+linear: nie działa
+poly: nie działa
+precomputed: idk, to trzeba jakoś inaczej
+rbf: działa, dobrze
+sigmoid: działa, słabo
+"""
+
 ds = DataSet(K=FOLDS)
 
 Features = ds.trainFeatures
 Targets = ds.trainTarget
 
 
-clf = clfTree
+clf = clfSVM
 accuracies = []
 for k in range(FOLDS):
+    # if k != 2:
     trainFeatures = ds.joinData(Features, k)
     trainTargets = ds.joinData(Targets, k)
     testFeatures = Features[k]
     testTargets = Targets[k]
 
+    # print(f'\n -- {k} --')
     clf.fit(trainFeatures, trainTargets)
-
+    # print('done')
     testPrediction = clf.predict(testFeatures)
 
     TP = 0
