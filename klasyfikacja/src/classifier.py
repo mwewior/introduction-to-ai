@@ -123,7 +123,15 @@ for k in range(FOLDS):
 avgAccuracy = np.mean(accuracies)
 stddevAccuracy = np.std(accuracies)
 
+mergedClasses = copy.deepcopy(single_dict)
+
 for obs in observations:
+
+    mergedClasses["accuracy"] += metrics[obs.name]["accuracy"]
+    mergedClasses["precision"] += metrics[obs.name]["precision"]
+    mergedClasses["recall"] += metrics[obs.name]["recall"]
+    mergedClasses["F1"] += metrics[obs.name]["F1"]
+
     metricStatistic[obs.name]["accuracy"] = {
         "mean": np.mean(metrics[obs.name]["accuracy"]),
         "std": np.std(metrics[obs.name]["accuracy"])
@@ -141,5 +149,27 @@ for obs in observations:
         "std": np.std(metrics[obs.name]["F1"])
         }
 
-printData.printOverallAccuracy(avgAccuracy, stddevAccuracy)
-printData.printStatisticMetrix(metricStatistic)
+mergedStatistics = copy.deepcopy(single_dict)
+
+for obs in observations:
+    mergedStatistics["accuracy"] = {
+        "mean": np.mean(mergedClasses["accuracy"]),
+        "std": np.std(mergedClasses["accuracy"])
+        }
+    mergedStatistics["precision"] = {
+        "mean": np.mean(mergedClasses["precision"]),
+        "std": np.std(mergedClasses["precision"])
+        }
+    mergedStatistics["recall"] = {
+        "mean": np.mean(mergedClasses["recall"]),
+        "std": np.std(mergedClasses["recall"])
+        }
+    mergedStatistics["F1"] = {
+        "mean": np.mean(mergedClasses["F1"]),
+        "std": np.std(mergedClasses["F1"])
+        }
+
+
+# printData.printOverallAccuracy(avgAccuracy, stddevAccuracy)
+# printData.printStatisticMetricsEach(metricStatistic)
+printData.printStatisticMetricsMerged(mergedStatistics)

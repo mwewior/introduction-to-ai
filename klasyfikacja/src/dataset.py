@@ -3,7 +3,7 @@ import numpy as np
 import yaml
 
 
-def loadParams(file_path: str = "../parameters.yaml"):
+def loadParams(file_path: str = "/home/wewiormik/wsi/klasyfikacja/parameters.yaml"):  # "../parameters.yaml"):  # noqa
     with open(file_path, 'r') as f:
         parameters = yaml.load(f, Loader=yaml.FullLoader)
     return parameters

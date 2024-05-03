@@ -44,7 +44,27 @@ def printMetricsPerFold(observations: List[Observation]):
     print(info)
 
 
-def printStatisticMetrix(data):
+def printStatisticMetricsMerged(data):
+    info = ""
+    info += '\n---------------------- SUMMARY -----------------------\n\n'
+    info += '\n           mean \t standard deviation'
+    info += '\n accuracy: '
+    info += f' {round(data["accuracy"]["mean"], DIGITS)},\t '
+    info += f' {round(data["accuracy"]["std"], DIGITS)}'
+    info += '\nprecision: '
+    info += f' {round(data["precision"]["mean"], DIGITS)},\t '
+    info += f' {round(data["precision"]["std"], DIGITS)}'
+    info += '\n   recall: '
+    info += f' {round(data["recall"]["mean"], DIGITS)},\t '
+    info += f' {round(data["recall"]["std"], DIGITS)}'
+    info += '\n       F1: '
+    info += f' {round(data["F1"]["mean"], DIGITS)},\t '
+    info += f' {round(data["F1"]["std"], DIGITS)}'
+    info += '\n'
+    print(info)
+
+
+def printStatisticMetricsEach(data):
     info = ""
     for className in data:
         info += f'\nClass: {className}'
@@ -67,7 +87,6 @@ def printStatisticMetrix(data):
 
 def printOverallAccuracy(avgAccuracy, stddevAccuracy):
     info = ""
-    info += '\n---------------------- SUMMARY -----------------------\n\n'
     info += f'Overall mean accuracy: {round(avgAccuracy, DIGITS)}\n'
     info += f'   Standard deviation: {round(stddevAccuracy, DIGITS)}\n'
     print(info)
