@@ -6,10 +6,8 @@ from typing import List
 from dataset import DataSet
 from observation import Observation
 
-FOLDS = 5
 
-
-def trueClassification(classes: List[Observation], target: int):
+def trueClassification(classes: List[Observation], target: int) -> None:
     classes[target].TP += 1
     for c in classes:
         if c != classes[target]:
@@ -17,7 +15,7 @@ def trueClassification(classes: List[Observation], target: int):
         c.update()
 
 
-def falseClassification(classes: List[Observation], target: int, predict: int):
+def falseClassification(classes: List[Observation], target: int, predict: int) -> None:  # noqa
     classes[target].FN += 1
     classes[predict].FP += 1
     for c in classes:
@@ -26,23 +24,33 @@ def falseClassification(classes: List[Observation], target: int, predict: int):
         c.update()
 
 
+def printInfo(clf) -> None:
+    info = ""
+    if clf == clfTree:
+        info += f'\ncriterion: {clf.criterion}, '
+        info += f'\n splitter: {clf.splitter}, '
+        info += f'\nmax depth: {clf.max_depth} '
+    elif clf == clfSVM:
+        info += f'\nkernel: {clf.kernel}, '
+        info += f'\n     C: {clf.C}, '
+        info += f'\n   tol: {clf.tol}, '
+        info += f'\n  iter: {clf.max_iter} '
+    info += '\n'
+    print(info)
+
+
 clfTree = DecisionTreeClassifier(
-    criterion="entropy", splitter="best", max_depth=4
+    criterion="entropy", splitter="random", max_depth=5
 )
 
 clfSVM = SVC(
     C=1, kernel="linear", tol=10e-16, max_iter=int(10e6)
 )
 
-"""
-trzeba dać ograniczenie iteracji!!!
 
-linear: nie działa
-poly: nie działa
-precomputed: idk, to trzeba jakoś inaczej
-rbf: działa, dobrze
-sigmoid: działa, słabo
-"""
+FOLDS = 5
+DIGITS = 5
+
 
 ds = DataSet(K=FOLDS)
 
@@ -51,24 +59,16 @@ Targets = ds.trainTarget
 
 
 clf = clfTree
+printInfo(clf)
 
-if clf == clfTree:
-    print(
-        f'\ncriterion: {clf.criterion},' +
-        f'\n splitter: {clf.splitter},' +
-        f'\nmax depth: {clf.max_depth}' +
-        '\n'
-    )
-elif clf == clfSVM:
-    print(
-        f'\nkernel: {clf.kernel},' +
-        f'\n     C: {clf.C},' +
-        f'\n   tol: {clf.tol}' +
-        f'\n  iter: {clf.max_iter}' +
-        '\n'
-    )
 
+oSetosa = Observation(name="Setosa")
+oVersicolor = Observation(name="Versicolor")
+oVirginica = Observation(name="Virginica")
+observations = [oSetosa, oVersicolor, oVirginica]
 accuracies = []
+
+
 for k in range(FOLDS):
     trainFeatures = ds.joinData(Features, k)
     trainTargets = ds.joinData(Targets, k)
@@ -77,11 +77,6 @@ for k in range(FOLDS):
 
     clf.fit(trainFeatures, trainTargets)
     testPrediction = clf.predict(testFeatures)
-
-    oSetosa = Observation()
-    oVersicolor = Observation()
-    oVirginica = Observation()
-    observation = [oSetosa, oVersicolor, oVirginica]
 
     numerosity = len(testTargets)
     AccuracyPOSITIVE = 0
@@ -100,29 +95,32 @@ for k in range(FOLDS):
         if (predictClass == targetClass):
             AccuracyPOSITIVE += 1
             where_error_str += "  "
-            trueClassification(observation, targetClass)
-            # observation[targetClass].TP += 1
-            # for c in observation:
-            #     if c != observation[targetClass]:
-            #         c.TN += 1
+            trueClassification(observations, targetClass)
         else:
             where_error_str += "X "
-            falseClassification(observation, targetClass, predictClass)
-            # observation[targetClass].FN += 1
-            # observation[predictClass].FP += 1
-            # for c in observation:
-            #     if c != observation[targetClass] and c != observation[predictClass]:  # noqa
-            #         c.TN += 1
+            falseClassification(observations, targetClass, predictClass)
 
     accuracy = AccuracyPOSITIVE / numerosity
-
-    print(f'\nFold {k}: accuracy = {round(accuracy, 5)}')
-    print(f'errors:    {where_error_str}')
-    print(f'predicted: {predict_str}')
-    print(f'target:    {target_str}')
-
     accuracies.append(accuracy)
+
+    print(f'Fold {k}: accuracy = {round(accuracy, DIGITS)}')
+    # print(f'Fold {k}: accuracy = {round(accuracy, DIGITS)}')
+    # print(f'errors:    {where_error_str}')
+    # print(f'predicted: {predict_str}')
+    # print(f'target:    {target_str}\n')
+
+
+for obs in observations:
+    print('')
+    print(f'Class: {obs.name}')
+    print(f' accuracy: {round(obs.accuracy(), DIGITS)}')
+    print(f'precision: {round(obs.precision(), DIGITS)}')
+    print(f'   recall: {round(obs.recall(), DIGITS)}')
+    print(f'       F1: {round(obs.F1(), DIGITS)}')
 
 avgAccuracy = np.mean(accuracies)
 stddevAccuracy = np.std(accuracies)
-print(f'\nMean: {round(avgAccuracy, 5)}\nstandard deviation: {stddevAccuracy}')
+print(
+    f'\nOverall mean accuracy: {round(avgAccuracy, DIGITS)}\n' +
+    f'standard deviation: {stddevAccuracy}\n'
+    )
