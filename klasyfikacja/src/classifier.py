@@ -125,49 +125,43 @@ stddevAccuracy = np.std(accuracies)
 
 mergedClasses = copy.deepcopy(single_dict)
 
-for obs in observations:
 
+def statistics(stats, data):
+    stats["accuracy"] = {
+        "mean": np.mean(data["accuracy"]),
+        "std": np.std(data["accuracy"])
+        }
+    stats["precision"] = {
+        "mean": np.mean(data["precision"]),
+        "std": np.std(data["precision"])
+        }
+    stats["recall"] = {
+        "mean": np.mean(data["recall"]),
+        "std": np.std(data["recall"])
+        }
+    stats["F1"] = {
+        "mean": np.mean(data["F1"]),
+        "std": np.std(data["F1"])
+        }
+    return stats
+
+
+for obs in observations:
     mergedClasses["accuracy"] += metrics[obs.name]["accuracy"]
     mergedClasses["precision"] += metrics[obs.name]["precision"]
     mergedClasses["recall"] += metrics[obs.name]["recall"]
     mergedClasses["F1"] += metrics[obs.name]["F1"]
 
-    metricStatistic[obs.name]["accuracy"] = {
-        "mean": np.mean(metrics[obs.name]["accuracy"]),
-        "std": np.std(metrics[obs.name]["accuracy"])
-        }
-    metricStatistic[obs.name]["precision"] = {
-        "mean": np.mean(metrics[obs.name]["precision"]),
-        "std": np.std(metrics[obs.name]["precision"])
-        }
-    metricStatistic[obs.name]["recall"] = {
-        "mean": np.mean(metrics[obs.name]["recall"]),
-        "std": np.std(metrics[obs.name]["recall"])
-        }
-    metricStatistic[obs.name]["F1"] = {
-        "mean": np.mean(metrics[obs.name]["F1"]),
-        "std": np.std(metrics[obs.name]["F1"])
-        }
+    metricStatistic[obs.name] = statistics(
+        stats=metricStatistic[obs.name],
+        data=metrics[obs.name]
+    )
+
 
 mergedStatistics = copy.deepcopy(single_dict)
-
-for obs in observations:
-    mergedStatistics["accuracy"] = {
-        "mean": np.mean(mergedClasses["accuracy"]),
-        "std": np.std(mergedClasses["accuracy"])
-        }
-    mergedStatistics["precision"] = {
-        "mean": np.mean(mergedClasses["precision"]),
-        "std": np.std(mergedClasses["precision"])
-        }
-    mergedStatistics["recall"] = {
-        "mean": np.mean(mergedClasses["recall"]),
-        "std": np.std(mergedClasses["recall"])
-        }
-    mergedStatistics["F1"] = {
-        "mean": np.mean(mergedClasses["F1"]),
-        "std": np.std(mergedClasses["F1"])
-        }
+mergedStatistics = statistics(
+    stats=mergedStatistics, data=mergedClasses
+)
 
 
 # printData.printOverallAccuracy(avgAccuracy, stddevAccuracy)
