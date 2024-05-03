@@ -1,11 +1,16 @@
 from ucimlrepo import fetch_ucirepo
 import numpy as np
+import yaml
 
 
-seed = 318407
-# seed = 271102
-# seed = 231219
-np.random.seed(seed)
+def loadParams(file_path: str = "../parameters.yaml"):
+    with open(file_path, 'r') as f:
+        parameters = yaml.load(f, Loader=yaml.FullLoader)
+    return parameters
+
+
+params = loadParams()
+np.random.seed(params["SEED"])
 
 
 class DataSet:

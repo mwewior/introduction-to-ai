@@ -1,20 +1,15 @@
 from typing import List
 from observation import Observation
-import yaml
-
-
-def loadParams(file_path: str = "../parameters.yaml"):
-    with open(file_path, 'r') as f:
-        parameters = yaml.load(f, Loader=yaml.FullLoader)
-    return parameters
+from dataset import loadParams
 
 
 parameters = loadParams()
 DIGITS = parameters["DIGITS"]
+SEED = parameters["SEED"]
 
 
 def printInfo(clf, clfTree, clfSVM) -> None:
-    info = ""
+    info = f"\nSeed: {SEED}\n"
     if clf == clfTree:
         info += f'\ncriterion: {clf.criterion}, '
         info += f'\n splitter: {clf.splitter}, '
@@ -49,22 +44,30 @@ def printMetricsPerFold(observations: List[Observation]):
     print(info)
 
 
-def printOverallMetrix(data):
+def printStatisticMetrix(data):
     info = ""
     for className in data:
         info += f'\nClass: {className}'
         info += '\n           mean \t standard deviation'
         info += '\n accuracy: '
-        info += f'{round(data[className]["accuracy"]["mean"], DIGITS)}, \t '
-        info += f'{round(data[className]["accuracy"]["std"], DIGITS)}'
+        info += f' {round(data[className]["accuracy"]["mean"], DIGITS)},\t '
+        info += f' {round(data[className]["accuracy"]["std"], DIGITS)}'
         info += '\nprecision: '
-        info += f'{round(data[className]["precision"]["mean"], DIGITS)}, \t '
-        info += f'{round(data[className]["precision"]["std"], DIGITS)}'
+        info += f' {round(data[className]["precision"]["mean"], DIGITS)},\t '
+        info += f' {round(data[className]["precision"]["std"], DIGITS)}'
         info += '\n   recall: '
-        info += f'{round(data[className]["recall"]["mean"], DIGITS)}, \t '
-        info += f'{round(data[className]["recall"]["std"], DIGITS)}'
+        info += f' {round(data[className]["recall"]["mean"], DIGITS)},\t '
+        info += f' {round(data[className]["recall"]["std"], DIGITS)}'
         info += '\n       F1: '
-        info += f'{round(data[className]["F1"]["mean"], DIGITS)}, \t '
-        info += f'{round(data[className]["F1"]["std"], DIGITS)}'
+        info += f' {round(data[className]["F1"]["mean"], DIGITS)},\t '
+        info += f' {round(data[className]["F1"]["std"], DIGITS)}'
         info += '\n'
+    print(info)
+
+
+def printOverallAccuracy(avgAccuracy, stddevAccuracy):
+    info = ""
+    info += '\n---------------------- SUMMARY -----------------------\n\n'
+    info += f'Overall mean accuracy: {round(avgAccuracy, DIGITS)}\n'
+    info += f'   Standard deviation: {round(stddevAccuracy, DIGITS)}\n'
     print(info)

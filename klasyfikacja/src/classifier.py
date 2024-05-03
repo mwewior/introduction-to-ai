@@ -4,9 +4,8 @@ from sklearn.svm import SVC
 import numpy as np
 from typing import List
 import copy
-import yaml
 
-from dataset import DataSet
+from dataset import DataSet, loadParams
 from observation import Observation
 import printData
 
@@ -28,23 +27,19 @@ def falseClassification(classes: List[Observation], target: int, predict: int) -
         c.update()
 
 
-def loadParams(file_path: str = "../parameters.yaml"):
-    with open(file_path, 'r') as f:
-        parameters = yaml.load(f, Loader=yaml.FullLoader)
-    return parameters
-
-
 parameters = loadParams()
 FOLDS = parameters["FOLDS"]
 DIGITS = parameters["DIGITS"]
+SEED = parameters["SEED"]
+np.random.seed(SEED)
 
 
 clfTree = DecisionTreeClassifier(
-    criterion="entropy", splitter="random", max_depth=5
+    criterion="entropy", splitter="random", max_depth=5, random_state=SEED
 )
 
 clfSVM = SVC(
-    C=1, kernel="linear", tol=10e-16, max_iter=int(10e6)
+    C=1, kernel="linear", tol=10e-16, max_iter=int(10e6), random_state=SEED
 )
 
 clf = clfTree
@@ -56,18 +51,6 @@ ds = DataSet(K=FOLDS)
 Features = ds.trainFeatures
 Targets = ds.trainTarget
 
-
-# classificationSetosa = Observation(name="Setosa")
-# classificationVersicolor = Observation(name="Versicolor")
-# classificationVirginica = Observation(name="Virginica")
-# classification = [
-#     classificationSetosa,
-#     classificationVersicolor,
-#     classificationVirginica
-# ]
-
-
-accuracies = []
 
 single_dict = {
     'accuracy': [],
@@ -84,6 +67,8 @@ metrics = {
 
 metricStatistic = copy.deepcopy(metrics)
 
+
+accuracies = []
 
 for k in range(FOLDS):
     trainFeatures = ds.joinData(Features, k)
@@ -123,9 +108,10 @@ for k in range(FOLDS):
 
     accuracy = AccuracyPOSITIVE / numerosity
     accuracies.append(accuracy)
-    print(f'Fold {k+1}: overall fold accuracy = {round(accuracy, DIGITS)}')
-    # printPredictions(accuracy, where_error_str, predict_str, target_str)
-    # printMetricsPerFold(observations)
+
+    print(f'Fold {k+1}: Overall accuracy = {round(accuracy, DIGITS)}')
+    # printData.printPredictions(accuracy, where_error_str, predict_str, target_str)  # noqa
+    # printData.printMetricsPerFold(observations)
 
     for obs in observations:
         metrics[obs.name]["accuracy"].append(obs.accuracy())
@@ -133,6 +119,9 @@ for k in range(FOLDS):
         metrics[obs.name]["recall"].append(obs.recall())
         metrics[obs.name]["F1"].append(obs.F1())
 
+
+avgAccuracy = np.mean(accuracies)
+stddevAccuracy = np.std(accuracies)
 
 for obs in observations:
     metricStatistic[obs.name]["accuracy"] = {
@@ -152,13 +141,5 @@ for obs in observations:
         "std": np.std(metrics[obs.name]["F1"])
         }
 
-
-printData.printOverallMetrix(metricStatistic)
-
-
-avgAccuracy = np.mean(accuracies)
-stddevAccuracy = np.std(accuracies)
-print(
-    f'\nOverall mean accuracy: {round(avgAccuracy, DIGITS)}\n' +
-    f'standard deviation: {stddevAccuracy}\n'
-    )
+printData.printOverallAccuracy(avgAccuracy, stddevAccuracy)
+printData.printStatisticMetrix(metricStatistic)
