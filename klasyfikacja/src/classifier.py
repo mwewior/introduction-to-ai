@@ -7,6 +7,9 @@ import copy
 
 from dataset import DataSet
 from observation import Observation
+# from printData import printInfo, printMetricsPerFold, printOverallMetrix, printPredictions  # noqa
+from printData import printInfo, printOverallMetrix
+# import printData
 
 
 def trueClassification(classes: List[Observation], target: int) -> None:
@@ -24,63 +27,6 @@ def falseClassification(classes: List[Observation], target: int, predict: int) -
         if c != classes[target] and c != classes[predict]:
             c.TN += 1
         c.update()
-
-
-def printInfo(clf) -> None:
-    info = ""
-    if clf == clfTree:
-        info += f'\ncriterion: {clf.criterion}, '
-        info += f'\n splitter: {clf.splitter}, '
-        info += f'\nmax depth: {clf.max_depth} '
-    elif clf == clfSVM:
-        info += f'\nkernel: {clf.kernel}, '
-        info += f'\n     C: {clf.C}, '
-        info += f'\n   tol: {clf.tol}, '
-        info += f'\n  iter: {clf.max_iter} '
-    info += '\n\n'
-    print(info)
-
-
-def printPredictions(accuracy, errors, predictions, targets):
-    info = ""
-    info += f'\naccuracy = {round(accuracy, DIGITS)}'
-    info += f'\nerrors:    {errors}'
-    info += f'\npredicted: {predictions}'
-    info += f'\ntarget:    {targets}'
-    print(info)
-
-
-def printMetricsPerFold(observations: List[Observation]):
-    info = ""
-    for obs in observations:
-        info += f'\nClass: {obs.name}'
-        info += f'\n accuracy: {round(obs.accuracy(), DIGITS)}'
-        info += f'\nprecision: {round(obs.precision(), DIGITS)}'
-        info += f'\n   recall: {round(obs.recall(), DIGITS)}'
-        info += f'\n       F1: {round(obs.F1(), DIGITS)}'
-        info += '\n'
-    print(info)
-
-
-def printOverallMetrix(data):
-    info = ""
-    for className in data:
-        info += f'\nClass: {className}'
-        info += '\n           mean \t standard deviation'
-        info += '\n accuracy: '
-        info += f'{round(data[className]["accuracy"]["mean"], DIGITS)}, \t '
-        info += f'{round(data[className]["accuracy"]["std"], DIGITS)}'
-        info += '\nprecision: '
-        info += f'{round(data[className]["precision"]["mean"], DIGITS)}, \t '
-        info += f'{round(data[className]["precision"]["std"], DIGITS)}'
-        info += '\n   recall: '
-        info += f'{round(data[className]["recall"]["mean"], DIGITS)}, \t '
-        info += f'{round(data[className]["recall"]["std"], DIGITS)}'
-        info += '\n       F1: '
-        info += f'{round(data[className]["F1"]["mean"], DIGITS)}, \t '
-        info += f'{round(data[className]["F1"]["std"], DIGITS)}'
-        info += '\n'
-    print(info)
 
 
 clfTree = DecisionTreeClassifier(
@@ -103,13 +49,17 @@ Targets = ds.trainTarget
 
 
 clf = clfTree
-printInfo(clf)
+printInfo(clf, clfTree, clfSVM)
 
 
-# oSetosa = Observation(name="Setosa")
-# oVersicolor = Observation(name="Versicolor")
-# oVirginica = Observation(name="Virginica")
-# observations = [oSetosa, oVersicolor, oVirginica]
+# classificationSetosa = Observation(name="Setosa")
+# classificationVersicolor = Observation(name="Versicolor")
+# classificationVirginica = Observation(name="Virginica")
+# classification = [
+#     classificationSetosa,
+#     classificationVersicolor,
+#     classificationVirginica
+# ]
 
 
 accuracies = []
@@ -127,11 +77,8 @@ metrics = {
     'Virginica': copy.deepcopy(single_dict)
 }
 
-metricStatistic = {
-    'Setosa': copy.deepcopy(single_dict),
-    'Versicolor': copy.deepcopy(single_dict),
-    'Virginica': copy.deepcopy(single_dict)
-}
+metricStatistic = copy.deepcopy(metrics)
+
 
 for k in range(FOLDS):
     trainFeatures = ds.joinData(Features, k)
@@ -171,6 +118,9 @@ for k in range(FOLDS):
 
     accuracy = AccuracyPOSITIVE / numerosity
     accuracies.append(accuracy)
+    print(f'Fold {k}: overall fold accuracy = {round(accuracy, DIGITS)}')
+    # printPredictions(accuracy, where_error_str, predict_str, target_str)
+    # printMetricsPerFold(observations)
 
     for obs in observations:
         metrics[obs.name]["accuracy"].append(obs.accuracy())
@@ -178,9 +128,6 @@ for k in range(FOLDS):
         metrics[obs.name]["recall"].append(obs.recall())
         metrics[obs.name]["F1"].append(obs.F1())
 
-    print(f'Fold {k}: overall fold accuracy = {round(accuracy, DIGITS)}')
-    # printPredictions(accuracy, where_error_str, predict_str, target_str)
-    # printMetricsPerFold(observations)
 
 for obs in observations:
     metricStatistic[obs.name]["accuracy"] = {
