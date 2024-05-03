@@ -70,100 +70,103 @@ metricStatistic = copy.deepcopy(metrics)
 
 accuracies = []
 
-for k in range(FOLDS):
-    trainFeatures = ds.joinData(Features, k)
-    trainTargets = ds.joinData(Targets, k)
-    testFeatures = Features[k]
-    testTargets = Targets[k]
 
-    clf.fit(trainFeatures, trainTargets)
-    testPrediction = clf.predict(testFeatures)
+def classification():
+    for k in range(FOLDS):
+        trainFeatures = ds.joinData(Features, k)
+        trainTargets = ds.joinData(Targets, k)
+        testFeatures = Features[k]
+        testTargets = Targets[k]
 
-    numerosity = len(testTargets)
-    AccuracyPOSITIVE = 0
+        clf.fit(trainFeatures, trainTargets)
+        testPrediction = clf.predict(testFeatures)
 
-    target_str = ""
-    predict_str = ""
-    where_error_str = ""
+        numerosity = len(testTargets)
+        AccuracyPOSITIVE = 0
 
-    oSetosa = Observation(name="Setosa")
-    oVersicolor = Observation(name="Versicolor")
-    oVirginica = Observation(name="Virginica")
-    observations = [oSetosa, oVersicolor, oVirginica]
+        target_str = ""
+        predict_str = ""
+        where_error_str = ""
 
-    for i in range(numerosity):
-        targetClass = testTargets[i]
-        predictClass = testPrediction[i]
+        oSetosa = Observation(name="Setosa")
+        oVersicolor = Observation(name="Versicolor")
+        oVirginica = Observation(name="Virginica")
+        observations = [oSetosa, oVersicolor, oVirginica]
 
-        predict_str += f'{predictClass} '
-        target_str += f'{targetClass} '
+        for i in range(numerosity):
+            targetClass = testTargets[i]
+            predictClass = testPrediction[i]
 
-        if (predictClass == targetClass):
-            AccuracyPOSITIVE += 1
-            where_error_str += "  "
-            trueClassification(observations, targetClass)
-        else:
-            where_error_str += "X "
-            falseClassification(observations, targetClass, predictClass)
+            predict_str += f'{predictClass} '
+            target_str += f'{targetClass} '
 
-    accuracy = AccuracyPOSITIVE / numerosity
-    accuracies.append(accuracy)
+            if (predictClass == targetClass):
+                AccuracyPOSITIVE += 1
+                where_error_str += "  "
+                trueClassification(observations, targetClass)
+            else:
+                where_error_str += "X "
+                falseClassification(observations, targetClass, predictClass)
 
-    print(f'Fold {k+1}: Overall accuracy = {round(accuracy, DIGITS)}')
-    # printData.printPredictions(accuracy, where_error_str, predict_str, target_str)  # noqa
-    # printData.printMetricsPerFold(observations)
+        accuracy = AccuracyPOSITIVE / numerosity
+        accuracies.append(accuracy)
+
+        print(f'Fold {k+1}: Overall accuracy = {round(accuracy, DIGITS)}')
+        # printData.printPredictions(accuracy, where_error_str, predict_str, target_str)  # noqa
+        # printData.printMetricsPerFold(observations)
+
+        for obs in observations:
+            metrics[obs.name]["accuracy"].append(obs.accuracy())
+            metrics[obs.name]["precision"].append(obs.precision())
+            metrics[obs.name]["recall"].append(obs.recall())
+            metrics[obs.name]["F1"].append(obs.F1())
+
+    # avgAccuracy = np.mean(accuracies)
+    # stddevAccuracy = np.std(accuracies)
+
+    mergedClasses = copy.deepcopy(single_dict)
+
+    def statistics(stats, data):
+        stats["accuracy"] = {
+            "mean": np.mean(data["accuracy"]),
+            "std": np.std(data["accuracy"])
+            }
+        stats["precision"] = {
+            "mean": np.mean(data["precision"]),
+            "std": np.std(data["precision"])
+            }
+        stats["recall"] = {
+            "mean": np.mean(data["recall"]),
+            "std": np.std(data["recall"])
+            }
+        stats["F1"] = {
+            "mean": np.mean(data["F1"]),
+            "std": np.std(data["F1"])
+            }
+        return stats
 
     for obs in observations:
-        metrics[obs.name]["accuracy"].append(obs.accuracy())
-        metrics[obs.name]["precision"].append(obs.precision())
-        metrics[obs.name]["recall"].append(obs.recall())
-        metrics[obs.name]["F1"].append(obs.F1())
+        mergedClasses["accuracy"] += metrics[obs.name]["accuracy"]
+        mergedClasses["precision"] += metrics[obs.name]["precision"]
+        mergedClasses["recall"] += metrics[obs.name]["recall"]
+        mergedClasses["F1"] += metrics[obs.name]["F1"]
 
+        metricStatistic[obs.name] = statistics(
+            stats=metricStatistic[obs.name],
+            data=metrics[obs.name]
+        )
 
-avgAccuracy = np.mean(accuracies)
-stddevAccuracy = np.std(accuracies)
-
-mergedClasses = copy.deepcopy(single_dict)
-
-
-def statistics(stats, data):
-    stats["accuracy"] = {
-        "mean": np.mean(data["accuracy"]),
-        "std": np.std(data["accuracy"])
-        }
-    stats["precision"] = {
-        "mean": np.mean(data["precision"]),
-        "std": np.std(data["precision"])
-        }
-    stats["recall"] = {
-        "mean": np.mean(data["recall"]),
-        "std": np.std(data["recall"])
-        }
-    stats["F1"] = {
-        "mean": np.mean(data["F1"]),
-        "std": np.std(data["F1"])
-        }
-    return stats
-
-
-for obs in observations:
-    mergedClasses["accuracy"] += metrics[obs.name]["accuracy"]
-    mergedClasses["precision"] += metrics[obs.name]["precision"]
-    mergedClasses["recall"] += metrics[obs.name]["recall"]
-    mergedClasses["F1"] += metrics[obs.name]["F1"]
-
-    metricStatistic[obs.name] = statistics(
-        stats=metricStatistic[obs.name],
-        data=metrics[obs.name]
+    mergedStatistics = copy.deepcopy(single_dict)
+    mergedStatistics = statistics(
+        stats=mergedStatistics, data=mergedClasses
     )
 
+    # printData.printOverallAccuracy(avgAccuracy, stddevAccuracy)
+    # printData.printStatisticMetricsEach(metricStatistic)
+    # printData.printStatisticMetricsMerged(mergedStatistics)
 
-mergedStatistics = copy.deepcopy(single_dict)
-mergedStatistics = statistics(
-    stats=mergedStatistics, data=mergedClasses
-)
+    return mergedStatistics
 
 
-# printData.printOverallAccuracy(avgAccuracy, stddevAccuracy)
-# printData.printStatisticMetricsEach(metricStatistic)
-printData.printStatisticMetricsMerged(mergedStatistics)
+stats = classification()
+printData.printStatisticMetricsMerged(stats)
