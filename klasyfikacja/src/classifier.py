@@ -1,7 +1,9 @@
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import SVC
+
 import numpy as np
 from typing import List
+import copy
 
 from dataset import DataSet
 from observation import Observation
@@ -48,7 +50,7 @@ def printPredictions(accuracy, errors, predictions, targets):
     print(info)
 
 
-def printMetrics(observations: List[Observation]):
+def printMetricsPerFold(observations: List[Observation]):
     info = ""
     for obs in observations:
         info += f'\nClass: {obs.name}'
@@ -57,7 +59,27 @@ def printMetrics(observations: List[Observation]):
         info += f'\n   recall: {round(obs.recall(), DIGITS)}'
         info += f'\n       F1: {round(obs.F1(), DIGITS)}'
         info += '\n'
-    info += '\n'
+    print(info)
+
+
+def printOverallMetrix(data):
+    info = ""
+    for className in data:
+        info += f'\nClass: {className}'
+        info += '\n           mean \t standard deviation'
+        info += '\n accuracy: '
+        info += f'{round(data[className]["accuracy"]["mean"], DIGITS)}, \t '
+        info += f'{round(data[className]["accuracy"]["std"], DIGITS)}'
+        info += '\nprecision: '
+        info += f'{round(data[className]["precision"]["mean"], DIGITS)}, \t '
+        info += f'{round(data[className]["precision"]["std"], DIGITS)}'
+        info += '\n   recall: '
+        info += f'{round(data[className]["recall"]["mean"], DIGITS)}, \t '
+        info += f'{round(data[className]["recall"]["std"], DIGITS)}'
+        info += '\n       F1: '
+        info += f'{round(data[className]["F1"]["mean"], DIGITS)}, \t '
+        info += f'{round(data[className]["F1"]["std"], DIGITS)}'
+        info += '\n'
     print(info)
 
 
@@ -92,6 +114,24 @@ printInfo(clf)
 
 accuracies = []
 
+single_dict = {
+    'accuracy': [],
+    'precision': [],
+    'recall': [],
+    'F1': []
+}
+
+metrics = {
+    'Setosa': copy.deepcopy(single_dict),
+    'Versicolor': copy.deepcopy(single_dict),
+    'Virginica': copy.deepcopy(single_dict)
+}
+
+metricStatistic = {
+    'Setosa': copy.deepcopy(single_dict),
+    'Versicolor': copy.deepcopy(single_dict),
+    'Virginica': copy.deepcopy(single_dict)
+}
 
 for k in range(FOLDS):
     trainFeatures = ds.joinData(Features, k)
@@ -132,28 +172,41 @@ for k in range(FOLDS):
     accuracy = AccuracyPOSITIVE / numerosity
     accuracies.append(accuracy)
 
-    print(f'Fold {k}: accuracy = {round(accuracy, DIGITS)}')
-    printPredictions(accuracy, where_error_str, predict_str, target_str)
-    # print(f'accuracy = {round(accuracy, DIGITS)}')
-    # print(f'errors:    {where_error_str}')
-    # print(f'predicted: {predict_str}')
-    # print(f'target:    {target_str}\n')
+    for obs in observations:
+        metrics[obs.name]["accuracy"].append(obs.accuracy())
+        metrics[obs.name]["precision"].append(obs.precision())
+        metrics[obs.name]["recall"].append(obs.recall())
+        metrics[obs.name]["F1"].append(obs.F1())
 
-    printMetrics(observations)
+    print(f'Fold {k}: overall fold accuracy = {round(accuracy, DIGITS)}')
+    # printPredictions(accuracy, where_error_str, predict_str, target_str)
+    # printMetricsPerFold(observations)
+
+for obs in observations:
+    metricStatistic[obs.name]["accuracy"] = {
+        "mean": np.mean(metrics[obs.name]["accuracy"]),
+        "std": np.std(metrics[obs.name]["accuracy"])
+        }
+    metricStatistic[obs.name]["precision"] = {
+        "mean": np.mean(metrics[obs.name]["precision"]),
+        "std": np.std(metrics[obs.name]["precision"])
+        }
+    metricStatistic[obs.name]["recall"] = {
+        "mean": np.mean(metrics[obs.name]["recall"]),
+        "std": np.std(metrics[obs.name]["recall"])
+        }
+    metricStatistic[obs.name]["F1"] = {
+        "mean": np.mean(metrics[obs.name]["F1"]),
+        "std": np.std(metrics[obs.name]["F1"])
+        }
 
 
+printOverallMetrix(metricStatistic)
 
-# for obs in observations:
-#     print('')
-#     print(f'Class: {obs.name}')
-#     print(f' accuracy: {round(obs.accuracy(), DIGITS)}')
-#     print(f'precision: {round(obs.precision(), DIGITS)}')
-#     print(f'   recall: {round(obs.recall(), DIGITS)}')
-#     print(f'       F1: {round(obs.F1(), DIGITS)}')
 
 avgAccuracy = np.mean(accuracies)
 stddevAccuracy = np.std(accuracies)
 print(
-    f'Overall mean accuracy: {round(avgAccuracy, DIGITS)}\n' +
+    f'\nOverall mean accuracy: {round(avgAccuracy, DIGITS)}\n' +
     f'standard deviation: {stddevAccuracy}\n'
     )
