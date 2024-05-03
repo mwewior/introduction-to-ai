@@ -35,7 +35,7 @@ np.random.seed(SEED)
 
 
 clfTree = DecisionTreeClassifier(
-    criterion="entropy", splitter="random", max_depth=5, random_state=SEED
+    criterion="entropy", splitter="random", max_depth=1, random_state=SEED
 )
 
 clfSVM = SVC(
@@ -110,7 +110,7 @@ for k in range(FOLDS):
     accuracies.append(accuracy)
 
     print(f'Fold {k+1}: Overall accuracy = {round(accuracy, DIGITS)}')
-    # printData.printPredictions(accuracy, where_error_str, predict_str, target_str)  # noqa
+    printData.printPredictions(accuracy, where_error_str, predict_str, target_str)  # noqa
     # printData.printMetricsPerFold(observations)
 
     for obs in observations:
@@ -129,19 +129,23 @@ mergedClasses = copy.deepcopy(single_dict)
 def statistics(stats, data):
     stats["accuracy"] = {
         "mean": np.mean(data["accuracy"]),
-        "std": np.std(data["accuracy"])
+        "std": np.std(data["accuracy"]),
+        "data": data["accuracy"]
         }
     stats["precision"] = {
         "mean": np.mean(data["precision"]),
-        "std": np.std(data["precision"])
+        "std": np.std(data["precision"]),
+        "data": data["precision"]
         }
     stats["recall"] = {
         "mean": np.mean(data["recall"]),
-        "std": np.std(data["recall"])
+        "std": np.std(data["recall"]),
+        "data": data["recall"]
         }
     stats["F1"] = {
         "mean": np.mean(data["F1"]),
-        "std": np.std(data["F1"])
+        "std": np.std(data["F1"]),
+        "data": data["F1"]
         }
     return stats
 
@@ -165,5 +169,7 @@ mergedStatistics = statistics(
 
 
 # printData.printOverallAccuracy(avgAccuracy, stddevAccuracy)
-# printData.printStatisticMetricsEach(metricStatistic)
+printData.printStatisticMetricsEach(metricStatistic)
 printData.printStatisticMetricsMerged(mergedStatistics)
+
+print(mergedStatistics)

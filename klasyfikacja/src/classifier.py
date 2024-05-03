@@ -1,13 +1,18 @@
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.svm import SVC
+# from sklearn.tree import DecisionTreeClassifier
+# from sklearn.svm import SVC
 
 import numpy as np
 from typing import List
 import copy
 
-from dataset import DataSet, loadParams
-from observation import Observation
-import printData
+try:
+    from dataset import DataSet, loadParams
+    from observation import Observation
+    # import printData
+except ModuleNotFoundError:
+    from src.dataset import DataSet, loadParams
+    from src.observation import Observation
+    # from src import printData
 
 
 def trueClassification(classes: List[Observation], target: int) -> None:
@@ -34,44 +39,42 @@ SEED = parameters["SEED"]
 np.random.seed(SEED)
 
 
-clfTree = DecisionTreeClassifier(
-    criterion="entropy", splitter="random", max_depth=5, random_state=SEED
-)
+# clfTree = DecisionTreeClassifier(
+#     criterion="entropy", splitter="random", max_depth=2, random_state=SEED
+# )
 
-clfSVM = SVC(
-    C=1, kernel="linear", tol=10e-16, max_iter=int(10e6), random_state=SEED
-)
+# clfSVM = SVC(
+#     C=1, kernel="linear", tol=10e-16, max_iter=int(10e6), random_state=SEED
+# )
 
-clf = clfTree
-printData.printInfo(clf, clfTree, clfSVM)
-
-
-ds = DataSet(K=FOLDS)
-
-Features = ds.trainFeatures
-Targets = ds.trainTarget
+# clf = clfTree
+# printData.printInfo(clf, clfTree, clfSVM)
 
 
-single_dict = {
-    'accuracy': [],
-    'precision': [],
-    'recall': [],
-    'F1': []
-}
+def classification(clf):
+    # printData.printInfo(clf, clfTree, clfSVM)
+    ds = DataSet(K=FOLDS)
 
-metrics = {
-    'Setosa': copy.deepcopy(single_dict),
-    'Versicolor': copy.deepcopy(single_dict),
-    'Virginica': copy.deepcopy(single_dict)
-}
+    Features = ds.trainFeatures
+    Targets = ds.trainTarget
 
-metricStatistic = copy.deepcopy(metrics)
+    single_dict = {
+        'accuracy': [],
+        'precision': [],
+        'recall': [],
+        'F1': []
+    }
 
+    metrics = {
+        'Setosa': copy.deepcopy(single_dict),
+        'Versicolor': copy.deepcopy(single_dict),
+        'Virginica': copy.deepcopy(single_dict)
+    }
 
-accuracies = []
+    metricStatistic = copy.deepcopy(metrics)
 
+    accuracies = []
 
-def classification():
     for k in range(FOLDS):
         trainFeatures = ds.joinData(Features, k)
         trainTargets = ds.joinData(Targets, k)
@@ -111,7 +114,7 @@ def classification():
         accuracy = AccuracyPOSITIVE / numerosity
         accuracies.append(accuracy)
 
-        print(f'Fold {k+1}: Overall accuracy = {round(accuracy, DIGITS)}')
+        # print(f'Fold {k+1}: Overall accuracy = {round(accuracy, DIGITS)}')
         # printData.printPredictions(accuracy, where_error_str, predict_str, target_str)  # noqa
         # printData.printMetricsPerFold(observations)
 
@@ -129,19 +132,23 @@ def classification():
     def statistics(stats, data):
         stats["accuracy"] = {
             "mean": np.mean(data["accuracy"]),
-            "std": np.std(data["accuracy"])
+            "std": np.std(data["accuracy"]),
+            "data": data["accuracy"]
             }
         stats["precision"] = {
             "mean": np.mean(data["precision"]),
-            "std": np.std(data["precision"])
+            "std": np.std(data["precision"]),
+            "data": data["precision"]
             }
         stats["recall"] = {
             "mean": np.mean(data["recall"]),
-            "std": np.std(data["recall"])
+            "std": np.std(data["recall"]),
+            "data": data["recall"]
             }
         stats["F1"] = {
             "mean": np.mean(data["F1"]),
-            "std": np.std(data["F1"])
+            "std": np.std(data["F1"]),
+            "data": data["F1"]
             }
         return stats
 
@@ -168,5 +175,5 @@ def classification():
     return mergedStatistics
 
 
-stats = classification()
-printData.printStatisticMetricsMerged(stats)
+# stats = classification(clfTree)
+# printData.printStatisticMetricsMerged(stats)

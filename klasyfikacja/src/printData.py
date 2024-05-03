@@ -1,7 +1,10 @@
 from typing import List
-from observation import Observation
-from dataset import loadParams
-
+try:
+    from observation import Observation
+    from dataset import loadParams
+except ModuleNotFoundError:
+    from src.observation import Observation
+    from src.dataset import loadParams
 
 parameters = loadParams()
 DIGITS = parameters["DIGITS"]
