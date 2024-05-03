@@ -1,8 +1,16 @@
 from typing import List
 from observation import Observation
+import yaml
 
 
-DIGITS = 5
+def loadParams(file_path: str = "../parameters.yaml"):
+    with open(file_path, 'r') as f:
+        parameters = yaml.load(f, Loader=yaml.FullLoader)
+    return parameters
+
+
+parameters = loadParams()
+DIGITS = parameters["DIGITS"]
 
 
 def printInfo(clf, clfTree, clfSVM) -> None:

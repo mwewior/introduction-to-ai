@@ -4,12 +4,11 @@ from sklearn.svm import SVC
 import numpy as np
 from typing import List
 import copy
+import yaml
 
 from dataset import DataSet
 from observation import Observation
-# from printData import printInfo, printMetricsPerFold, printOverallMetrix, printPredictions  # noqa
-from printData import printInfo, printOverallMetrix
-# import printData
+import printData
 
 
 def trueClassification(classes: List[Observation], target: int) -> None:
@@ -29,6 +28,17 @@ def falseClassification(classes: List[Observation], target: int, predict: int) -
         c.update()
 
 
+def loadParams(file_path: str = "../parameters.yaml"):
+    with open(file_path, 'r') as f:
+        parameters = yaml.load(f, Loader=yaml.FullLoader)
+    return parameters
+
+
+parameters = loadParams()
+FOLDS = parameters["FOLDS"]
+DIGITS = parameters["DIGITS"]
+
+
 clfTree = DecisionTreeClassifier(
     criterion="entropy", splitter="random", max_depth=5
 )
@@ -37,19 +47,14 @@ clfSVM = SVC(
     C=1, kernel="linear", tol=10e-16, max_iter=int(10e6)
 )
 
-
-FOLDS = 5
-DIGITS = 5
+clf = clfTree
+printData.printInfo(clf, clfTree, clfSVM)
 
 
 ds = DataSet(K=FOLDS)
 
 Features = ds.trainFeatures
 Targets = ds.trainTarget
-
-
-clf = clfTree
-printInfo(clf, clfTree, clfSVM)
 
 
 # classificationSetosa = Observation(name="Setosa")
@@ -118,7 +123,7 @@ for k in range(FOLDS):
 
     accuracy = AccuracyPOSITIVE / numerosity
     accuracies.append(accuracy)
-    print(f'Fold {k}: overall fold accuracy = {round(accuracy, DIGITS)}')
+    print(f'Fold {k+1}: overall fold accuracy = {round(accuracy, DIGITS)}')
     # printPredictions(accuracy, where_error_str, predict_str, target_str)
     # printMetricsPerFold(observations)
 
@@ -148,7 +153,7 @@ for obs in observations:
         }
 
 
-printOverallMetrix(metricStatistic)
+printData.printOverallMetrix(metricStatistic)
 
 
 avgAccuracy = np.mean(accuracies)
