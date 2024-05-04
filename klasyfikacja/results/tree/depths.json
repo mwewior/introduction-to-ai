@@ -3,30 +3,35 @@
         "accuracy": [],
         "precision": [],
         "recall": [],
-        "F1": []
+        "F1": [],
+        "name": ""
     },
     "2": {
         "accuracy": [],
         "precision": [],
         "recall": [],
-        "F1": []
+        "F1": [],
+        "name": ""
     },
     "3": {
         "accuracy": [],
         "precision": [],
         "recall": [],
-        "F1": []
+        "F1": [],
+        "name": ""
     },
     "4": {
         "accuracy": [],
         "precision": [],
         "recall": [],
-        "F1": []
+        "F1": [],
+        "name": ""
     },
     "5": {
         "accuracy": [],
         "precision": [],
         "recall": [],
-        "F1": []
+        "F1": [],
+        "name": ""
     }
 }

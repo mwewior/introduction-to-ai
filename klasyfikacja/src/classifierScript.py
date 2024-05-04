@@ -39,10 +39,10 @@ clfTree = DecisionTreeClassifier(
 )
 
 clfSVM = SVC(
-    C=1, kernel="linear", tol=10e-16, max_iter=int(10e6), random_state=SEED
+    C=1, kernel="linear", tol=10e-16, max_iter=int(20), random_state=SEED
 )
 
-clf = clfTree
+clf = clfSVM
 printData.printInfo(clf, clfTree, clfSVM)
 
 
@@ -109,8 +109,8 @@ for k in range(FOLDS):
     accuracy = AccuracyPOSITIVE / numerosity
     accuracies.append(accuracy)
 
-    print(f'Fold {k+1}: Overall accuracy = {round(accuracy, DIGITS)}')
-    printData.printPredictions(accuracy, where_error_str, predict_str, target_str)  # noqa
+    # print(f'Fold {k+1}: Overall accuracy = {round(accuracy, DIGITS)}')
+    # printData.printPredictions(accuracy, where_error_str, predict_str, target_str)  # noqa
     # printData.printMetricsPerFold(observations)
 
     for obs in observations:
@@ -169,7 +169,7 @@ mergedStatistics = statistics(
 
 
 # printData.printOverallAccuracy(avgAccuracy, stddevAccuracy)
-printData.printStatisticMetricsEach(metricStatistic)
+# printData.printStatisticMetricsEach(metricStatistic)
 printData.printStatisticMetricsMerged(mergedStatistics)
 
-print(mergedStatistics)
+# print(mergedStatistics)
