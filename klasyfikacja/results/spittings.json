@@ -1,4 +1,14 @@
 {
-    "Best": {},
-    "Random": {}
+    "Best": {
+        "accuracy": [],
+        "precision": [],
+        "recall": [],
+        "F1": []
+    },
+    "Random": {
+        "accuracy": [],
+        "precision": [],
+        "recall": [],
+        "F1": []
+    }
 }

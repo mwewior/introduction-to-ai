@@ -1,4 +1,10 @@
 {
+    "0.5": {
+        "accuracy": [],
+        "precision": [],
+        "recall": [],
+        "F1": []
+    },
     "1": {
         "accuracy": [],
         "precision": [],
@@ -11,19 +17,13 @@
         "recall": [],
         "F1": []
     },
-    "3": {
-        "accuracy": [],
-        "precision": [],
-        "recall": [],
-        "F1": []
-    },
-    "4": {
-        "accuracy": [],
-        "precision": [],
-        "recall": [],
-        "F1": []
-    },
     "5": {
+        "accuracy": [],
+        "precision": [],
+        "recall": [],
+        "F1": []
+    },
+    "10": {
         "accuracy": [],
         "precision": [],
         "recall": [],
