@@ -34,15 +34,21 @@ SEED = parameters["SEED"]
 np.random.seed(SEED)
 
 
+LogSummary = True
+LogEachFold = False
+LogTargetPrediction = False
+
+
 clfTree = DecisionTreeClassifier(
-    criterion="entropy", splitter="random", max_depth=1, random_state=SEED
+    criterion="entropy", splitter="best", max_depth=4, random_state=SEED
 )
 
 clfSVM = SVC(
-    C=1, kernel="linear", tol=10e-16, max_iter=int(20), random_state=SEED
+    C=0.0001, kernel="rbf", tol=10e-16, max_iter=int(20), random_state=SEED
 )
 
 clf = clfSVM
+
 printData.printInfo(clf, clfTree, clfSVM)
 
 
@@ -109,9 +115,12 @@ for k in range(FOLDS):
     accuracy = AccuracyPOSITIVE / numerosity
     accuracies.append(accuracy)
 
-    # print(f'Fold {k+1}: Overall accuracy = {round(accuracy, DIGITS)}')
-    # printData.printPredictions(accuracy, where_error_str, predict_str, target_str)  # noqa
-    # printData.printMetricsPerFold(observations)
+    if LogTargetPrediction:
+        # print(f'Fold {k+1}: Overall accuracy = {round(accuracy, DIGITS)}')
+        print(f"{'-'*70}\nFold {k}:")
+        printData.printPredictions(accuracy, where_error_str, predict_str, target_str)  # noqa
+    if LogEachFold:
+        printData.printMetricsPerFold(observations)
 
     for obs in observations:
         metrics[obs.name]["accuracy"].append(obs.accuracy())
@@ -170,6 +179,7 @@ mergedStatistics = statistics(
 
 # printData.printOverallAccuracy(avgAccuracy, stddevAccuracy)
 # printData.printStatisticMetricsEach(metricStatistic)
-printData.printStatisticMetricsMerged(mergedStatistics)
+if LogSummary:
+    printData.printStatisticMetricsMerged(mergedStatistics)
 
 # print(mergedStatistics)

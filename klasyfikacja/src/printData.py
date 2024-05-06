@@ -28,7 +28,7 @@ def printInfo(clf, clfTree, clfSVM) -> None:
 
 def printPredictions(accuracy, errors, predictions, targets):
     info = ""
-    info += f'\naccuracy = {round(accuracy, DIGITS)}'
+    info += f'\n    Overall accuracy = {round(accuracy, DIGITS)}'
     info += f'\nerrors:    {errors}'
     info += f'\npredicted: {predictions}'
     info += f'\ntarget:    {targets}'
