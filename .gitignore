@@ -7,3 +7,4 @@ ewolucja/images
 minmax/src/results
 **/images
 **/workspace.py
+*.pdf
