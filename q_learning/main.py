@@ -37,9 +37,12 @@ def run(
         if terminated or truncated:
             observation, info = env.reset()
 
+        if round(_ % 1e5) == 0:
+            print(_)
+
     env.close()
-    print("\nfinall Q Table:")
-    print(Q.Q)
+    # print("\nfinall Q Table:")
+    # print(Q.Q)
     return Q
 
 
@@ -52,6 +55,22 @@ if __name__ == "__main__":
         # render_mode="human",  # jeżeli ma się wyświetlać
     )
     t = int(1e6)
-    Q1 = run(env, Tmax=t, policy="Epsa-greedy", eps=0.9)
-    Q2 = run(env, Tmax=t, Q=Q1, policy="Boltzman")
-    Q3 = run(env, Tmax=t, Q=Q2, policy="Epsa-greedy", eps=0.15)
+    # Q0 = QLearning.Q(
+    #         QSHAPE,
+    #         learning_rate=0.1,
+    #         discount=0.87,
+    #         policy=policy,  # Eps-greedy | Boltzman
+    #         eps=eps,
+    #         T=2,
+    #    )
+    Q1 = run(env=env, Tmax=t, policy="Eps-greedy", eps=0.9)
+    Q2 = run(env=env, Tmax=t, Q=Q1, policy="Boltzman")
+    Q3 = run(env=env, Tmax=t, Q=Q2, policy="Eps-greedy", eps=0.15)
+
+    print("\n\n\tFirst Table:\n")
+    print(Q1.Q)
+    print("\n\n\tSecond Table:\n")
+    print(Q2.Q)
+    print("\n\n\tThird Table:\n")
+    print(Q3.Q)
+    print(Q3.reshapeQ())

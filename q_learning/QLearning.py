@@ -55,3 +55,15 @@ class Q:
 
         self.Q[self.state, action] = prev + updated
         self.state = next_state
+
+    def reshapeQ(self):
+        Qmoves = []
+        for i in range(self.Q.shape[1]):
+            Qmoves.append(np.array(self.Q[:, i]))
+            Qmoves[i].reshape(8, 8)
+        return np.stack(Qmoves, axis=1)
+
+    def showBestStrategy():
+        # ma zwrócić macierz gdzie po prostu będzie mapa, a na niej cyferki,
+        # które mówią który ruch najlepiej wykonać w danym miejscu
+        pass
