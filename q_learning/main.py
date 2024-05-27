@@ -1,6 +1,11 @@
 import gym
 import QLearning
 
+import numpy as np
+
+
+SEED = np.random.seed(318407)
+
 
 mapsize = 64
 actionTypes = 4
@@ -8,69 +13,59 @@ QSHAPE = (mapsize, actionTypes)
 
 
 def run(
-    env: gym.Env,
-    Tmax: int = 1000,
-    Q: QLearning.Q = None,
-    policy: str = "Eps-greedy",
-    eps: int = 0.8,
+    env: gym.Env, Q: QLearning.Q = None, Tmax: int = 50, Emax: int = 20000
 ):
-    if Q is None:
-        Q = QLearning.Q(
-            QSHAPE,
-            learning_rate=0.1,
-            discount=0.87,
-            policy=policy,  # Eps-greedy | Boltzman
-            eps=eps,
-            T=2,
-        )
 
-    # observation, info = env.reset(seed=SEED)
-    observation, info = env.reset()
+    for e in range(Emax):
 
-    for _ in range(Tmax):
-        action = Q.chooseAction()
+        observation, info = env.reset()
+        Q.updateState(observation)
 
-        observation, reward, terminated, truncated, info = env.step(action)
+        if round(e % 1e3) == 0:
+            print(f"Episode: {int(e / 1e3)}e3 | Rewards gained: {Q.rewardCounter}")  # noqa
 
-        Q.updateQ(observation, action, reward)
+        for t in range(Tmax):
+            action = Q.chooseAction()
 
-        if terminated or truncated:
-            observation, info = env.reset()
+            observation, reward, terminated, truncated, info = env.step(action)
 
-        if round(_ % 1e5) == 0:
-            print(_)
+            Q.updateQ(observation, action, reward)
+
+            if reward == 1:
+                Q.rewardCounter += 1
+
+            if terminated or truncated:
+                break
 
     env.close()
-    # print("\nfinall Q Table:")
-    # print(Q.Q)
-    return Q
 
 
 if __name__ == "__main__":
-    env = gym.make(
-        "FrozenLake-v1",
-        desc=None,
-        map_name="8x8",
-        is_slippery=True,
-        # render_mode="human",  # jeżeli ma się wyświetlać
-    )
-    t = int(1e6)
-    # Q0 = QLearning.Q(
-    #         QSHAPE,
-    #         learning_rate=0.1,
-    #         discount=0.87,
-    #         policy=policy,  # Eps-greedy | Boltzman
-    #         eps=eps,
-    #         T=2,
-    #    )
-    Q1 = run(env=env, Tmax=t, policy="Eps-greedy", eps=0.9)
-    Q2 = run(env=env, Tmax=t, Q=Q1, policy="Boltzman")
-    Q3 = run(env=env, Tmax=t, Q=Q2, policy="Eps-greedy", eps=0.15)
 
-    print("\n\n\tFirst Table:\n")
-    print(Q1.Q)
-    print("\n\n\tSecond Table:\n")
-    print(Q2.Q)
-    print("\n\n\tThird Table:\n")
-    print(Q3.Q)
-    print(Q3.reshapeQ())
+    ENV = gym.make(
+        "FrozenLake-v1", desc=None, map_name="8x8", is_slippery=True
+    )
+    ENV_SHOW = gym.make(
+        "FrozenLake-v1", desc=None, map_name="8x8", is_slippery=True, render_mode='human'  # noqa
+    )
+
+    Q = QLearning.Q(
+        map_shape=QSHAPE,
+        learning_rate=0.9,
+        discount=0.87,
+        policy="Eps-greedy",  # Eps-greedy | Boltzman
+        eps=0.6,
+        T=2,
+    )
+
+    E = int(5e5)
+    T = int(5e1)
+
+    run(env=ENV, Q=Q, Tmax=T, Emax=E)
+    print(Q.Q)
+    print(f"Rewards count: {Q.rewardCounter}")
+    # print(f"\n\n\t\tdifference\n{Q.Q - Qready.Q}\n\t\tdifference\n\n")
+
+    Q.eps = 0.9
+    run(env=ENV, Q=Q, Tmax=T, Emax=10)
+    print(f"Rewards count: {Q.rewardCounter}")
