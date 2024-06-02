@@ -12,60 +12,56 @@ actionTypes = 4
 QSHAPE = (mapsize, actionTypes)
 
 
-def run(
-    env: gym.Env, Q: QLearning.Q = None, Tmax: int = 50, Emax: int = 20000
-):
-
-    for e in range(Emax):
-
-        observation, info = env.reset()
-        Q.updateState(observation)
-
-        if round(e % 1e3) == 0:
-            print(f"Episode: {int(e / 1e3)}e3 | Rewards gained: {Q.rewardCounter}")  # noqa
-
-        for t in range(Tmax):
-            action = Q.chooseAction()
-
-            observation, reward, terminated, truncated, info = env.step(action)
-
-            Q.updateQ(observation, action, reward)
-
-            if reward == 1:
-                Q.rewardCounter += 1
-
-            if terminated or truncated:
-                break
-
-    env.close()
+def print_results(Q: QLearning.QL):
+    print(f"\nRewards count: {Q.rewardCounter}")
+    print(Q.Q)
+    indexes = "indeksy:\n"
+    values = "moves:\n"
+    i = 0
+    s = 0
+    for m in Q.moves:
+        if m > 0:
+            indexes += f"{i}," + " "*(8-len(str(i)))
+            values += f"{m}," + " "*(8-len(str(m)))
+            s += 1
+        i += 1
+    indexes += "\nkoniec.\n"
+    values += "\nkoniec.\n"
+    print(f"suma: {s}\n")
 
 
 if __name__ == "__main__":
 
+    IS_SLIPPERY = True
+    print(f"Slippery: {IS_SLIPPERY}")
+
     ENV = gym.make(
-        "FrozenLake-v1", desc=None, map_name="8x8", is_slippery=True
+        "FrozenLake-v1", desc=None, map_name="8x8", is_slippery=IS_SLIPPERY
     )
     ENV_SHOW = gym.make(
-        "FrozenLake-v1", desc=None, map_name="8x8", is_slippery=True, render_mode='human'  # noqa
+        "FrozenLake-v1", desc=None, map_name="8x8", is_slippery=IS_SLIPPERY, render_mode='human'  # noqa
     )
+    ENV_SHOW.metadata["render_fps"] = 90
 
-    Q = QLearning.Q(
+    Q = QLearning.QL(
         map_shape=QSHAPE,
         learning_rate=0.9,
-        discount=0.87,
+        discount=0.97,
         policy="Eps-greedy",  # Eps-greedy | Boltzman
-        eps=0.6,
+        eps=0.9,
         T=2,
     )
 
-    E = int(5e5)
-    T = int(5e1)
+    E = int(1e4)
+    T = 192
 
-    run(env=ENV, Q=Q, Tmax=T, Emax=E)
-    print(Q.Q)
-    print(f"Rewards count: {Q.rewardCounter}")
-    # print(f"\n\n\t\tdifference\n{Q.Q - Qready.Q}\n\t\tdifference\n\n")
+    QLearning.run(env=ENV, Q=Q, Tmax=T, Emax=E)
 
-    Q.eps = 0.9
-    run(env=ENV, Q=Q, Tmax=T, Emax=10)
-    print(f"Rewards count: {Q.rewardCounter}")
+    print_results(Q)
+    print(Q.getLastMoves(200))
+
+    Q.eps = 0.001
+    QLearning.run(env=ENV, Q=Q, Tmax=T, Emax=int(10e4))
+
+    print_results(Q)
+    print(Q.getLastMoves(200))
