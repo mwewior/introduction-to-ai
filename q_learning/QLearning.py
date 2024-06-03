@@ -1,13 +1,14 @@
 import numpy as np
 import gym
+from multiprocessing import Queue
 
 
 class QL:
     def __init__(
         self,
         map_shape: tuple[int] = (64, 4),
-        learning_rate: float = 0.1,
-        discount: float = 0.8,
+        learning_rate: float = 0.9,
+        discount: float = 0.9,
         policy: str = "Eps-greedy",     # "Boltzman"
         eps: float = 0.5,
         T: float = 1.0,
@@ -83,8 +84,55 @@ class QL:
 
 
 def run(
-    env: gym.Env, Q: QL = None, Tmax: int = 50, Emax: int = 20000
+    env: gym.Env,   Q: QL = None,
+    Tmax: int = 50, Emax: int = 20000
 ):
+
+    moves = []
+    for e in range(Emax):
+
+        observation, info = env.reset()
+        Q.updateState(observation)
+        episodeMoves = 0
+        moves.append(0)
+
+        for t in range(Tmax):
+            action = Q.chooseAction()
+            episodeMoves += 1
+            observation, reward, terminated, truncated, info = env.step(action)
+
+            # if truncated:
+            #     reward = reward * -0.1
+
+            Q.updateQ(observation, action, reward)
+
+            if terminated:
+                if reward == 1:
+                    Q.rewardCounter += 1
+                    moves[e] = episodeMoves
+                else:
+                    moves[e] = "D"
+                break
+
+            if truncated or t == Tmax-1:
+                moves[e] = "_"
+                break
+
+        # print(f"Episode: {e} | Last reward: {reward} | Rewards gained: {Q.rewardCounter}")    # noqa
+        # if round(e % 1e3) == 0:
+        #     print(f"Episode: {int(e / 1e3)}e3 | Rewards gained: {Q.rewardCounter}")           # noqa
+
+    Q.moves = moves
+    env.close()
+
+
+def run_parralel(
+    seed: int,      queue: Queue,
+    env: gym.Env,   Q: QL = None,
+    Tmax: int = 50, Emax: int = 20000
+):
+
+    np.random.seed(seed)
 
     moves = []
     for e in range(Emax):
@@ -107,13 +155,22 @@ def run(
             if reward == 1:
                 Q.rewardCounter += 1
                 moves[e] = episodeMoves
-
-            if terminated or truncated:
                 break
 
-        # print(f"Episode: {e} | Last reward: {reward} | Rewards gained: {Q.rewardCounter}")    # noqa
-        # if round(e % 1e3) == 0:
-        #     print(f"Episode: {int(e / 1e3)}e3 | Rewards gained: {Q.rewardCounter}")           # noqa
+            if terminated:
+                moves[e] = "D"
+                break
+
+            if truncated or t == Tmax-1:
+                moves[e] = "X"
+                break
 
     Q.moves = moves
+    result = {
+        'seed': seed,
+        'Q': Q.Q,
+        'rewardCounter': Q.rewardCounter,
+        'moves': Q.moves
+    }
+    queue.put(result)
     env.close()
