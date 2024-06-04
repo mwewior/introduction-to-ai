@@ -1,5 +1,9 @@
 import gym
-import QLearning
+try:
+    import QLearning
+except ModuleNotFoundError:
+    import src.QLearning as QLearning
+
 
 import numpy as np
 from copy import deepcopy
