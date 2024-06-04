@@ -4,8 +4,10 @@ import QLearning
 import numpy as np
 from copy import deepcopy
 
+# import matplotlib.pylab as plt
 
-SEED = np.random.seed(318407)
+
+SEED = 318407
 
 
 mapsize = 64
@@ -59,7 +61,7 @@ def main(Q: QLearning.QL = None, seed: int = SEED, isShown: bool = False):
     if Q is None:
         Q = QLearning.QL(
             map_shape=QSHAPE,
-            learning_rate=0.2,
+            learning_rate=0.1,
             discount=0.95,
             policy="Eps-greedy",  # Eps-greedy | Boltzman
             eps=0.95,
@@ -68,7 +70,7 @@ def main(Q: QLearning.QL = None, seed: int = SEED, isShown: bool = False):
 
     T = 192
     E = int(1e4)
-    E_validate = int(1e4)
+    E_validate = int(1e3)
 
     QLearning.run(env=ENV, Q=Q, Tmax=T, Emax=E)
 
@@ -84,7 +86,19 @@ def main(Q: QLearning.QL = None, seed: int = SEED, isShown: bool = False):
     Q.rewardCounter = 0
     Q.eps = 0.001
     # Q.T = 5
-    QLearning.run(env=ENV, Q=Q, Tmax=T, Emax=E_validate)
+
+    Qout = QLearning.QL(
+        map_shape=QSHAPE,
+        policy="Eps-greedy",  # Eps-greedy | Boltzman
+        eps=0.01,
+        T=1,
+    )
+
+    Qout.learning_rate = Q.learning_rate
+    Qout.discount = Q.discount
+    Qout.Q = Q.Q
+
+    QLearning.run(env=ENV, Q=Qout, Tmax=T, Emax=E_validate)
 
     if isShown:
         print_results(Q)
@@ -97,12 +111,41 @@ def main(Q: QLearning.QL = None, seed: int = SEED, isShown: bool = False):
         "seed": seed,
         "Q": Q.Q,
         "rewards": Q.rewardCounter,
-        "moves": Q.moves,
+        "moves": Qout.moves,
         "moves_learn": movesL
     }
 
     return results
 
 
-if __name__ == "__main__":
-    main(seed=SEED, isShown=True)
+# if __name__ == "__main__":
+
+    # # results = main(seed=SEED, isShown=True)
+    # # seeds = [318407, 4062024, 19122020, 27112002, 99815612]
+    # # for s in seeds:
+
+    # s = 4062024
+    # results = main(seed=s, isShown=True)
+
+    # moves = results["moves"]
+
+    # last_moves = []
+    # last_moves_achived = []
+
+    # for m in moves:
+    #     if type(m) is int:
+    #         # reward_moves_count.append(m)
+    #         last_moves.append(m)
+    #         last_moves_achived.append(m)
+    #     else:
+    #         last_moves.append(0)
+
+    # ydata = last_moves
+    # xdata = list(range(1, len(ydata)+1))
+
+    # plt.figure()
+    # plt.grid(True)
+    # plt.plot(xdata, ydata, '--')
+    # plt.plot(xdata, ydata, '.')
+    # # plt.title(f"seed: {s}")
+    # plt.show()
