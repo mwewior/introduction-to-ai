@@ -7,10 +7,10 @@ class QL:
     def __init__(
         self,
         map_shape: tuple[int] = (64, 4),
-        learning_rate: float = 0.9,
+        learning_rate: float = 0.2,
         discount: float = 0.9,
         policy: str = "Eps-greedy",     # "Boltzman"
-        eps: float = 0.5,
+        eps: float = 0.9,
         T: float = 1.0,
     ):
         self.Q = np.zeros(shape=map_shape)

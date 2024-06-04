@@ -2,6 +2,7 @@ import gym
 import QLearning
 
 import numpy as np
+from copy import deepcopy
 
 
 SEED = np.random.seed(318407)
@@ -34,9 +35,11 @@ def print_results(Q: QLearning.QL, print_all: bool = False):
         print(values)
 
 
-def main(seed: int = SEED, isShown: bool = False):
+def main(Q: QLearning.QL = None, seed: int = SEED, isShown: bool = False):
 
     IS_SLIPPERY = True
+
+    np.random.seed(seed)
 
     if isShown:
         print(f"\nSlippery: {IS_SLIPPERY}\n")
@@ -53,17 +56,18 @@ def main(seed: int = SEED, isShown: bool = False):
     )
     ENV_SHOW.metadata["render_fps"] = 90
 
-    Q = QLearning.QL(
-        map_shape=QSHAPE,
-        learning_rate=0.9,
-        discount=0.97,
-        policy="Eps-greedy",  # Eps-greedy | Boltzman
-        eps=0.95,
-        T=1,
-    )
+    if Q is None:
+        Q = QLearning.QL(
+            map_shape=QSHAPE,
+            learning_rate=0.2,
+            discount=0.95,
+            policy="Eps-greedy",  # Eps-greedy | Boltzman
+            eps=0.95,
+            T=1,
+        )
 
     T = 192
-    E = int(1e5)
+    E = int(1e4)
     E_validate = int(1e4)
 
     QLearning.run(env=ENV, Q=Q, Tmax=T, Emax=E)
@@ -72,8 +76,14 @@ def main(seed: int = SEED, isShown: bool = False):
         print_results(Q)
         print(Q.getLastMoves(200))
 
+    alpha = deepcopy(Q.learning_rate)
+    gamma = deepcopy(Q.discount)
+    epsilon = deepcopy(Q.eps)
+    movesL = deepcopy(Q.moves)
+
     Q.rewardCounter = 0
     Q.eps = 0.001
+    # Q.T = 5
     QLearning.run(env=ENV, Q=Q, Tmax=T, Emax=E_validate)
 
     if isShown:
@@ -81,10 +91,14 @@ def main(seed: int = SEED, isShown: bool = False):
         print(Q.getLastMoves(200))
 
     results = {
+        "alpha": alpha,
+        "gamma": gamma,
+        "epsilon": epsilon,
         "seed": seed,
         "Q": Q.Q,
         "rewards": Q.rewardCounter,
         "moves": Q.moves,
+        "moves_learn": movesL
     }
 
     return results
