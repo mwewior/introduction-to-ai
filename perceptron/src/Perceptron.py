@@ -1,6 +1,9 @@
 import numpy as np
 
-from Layer import Layer
+try:
+    from Layer import Layer
+except ModuleNotFoundError:
+    from src.Layer import Layer
 
 
 class MLP:
