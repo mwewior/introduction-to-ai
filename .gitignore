@@ -8,3 +8,5 @@ minmax/src/results
 **/images
 **/workspace.py
 *.pdf
+**/*Test.py
+**/parallel_main.py
