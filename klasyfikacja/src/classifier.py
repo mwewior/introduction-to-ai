@@ -39,24 +39,17 @@ SEED = parameters["SEED"]
 np.random.seed(SEED)
 
 
-# clfTree = DecisionTreeClassifier(
-#     criterion="entropy", splitter="random", max_depth=2, random_state=SEED
-# )
-
-# clfSVM = SVC(
-#     C=1, kernel="linear", tol=10e-16, max_iter=int(10e6), random_state=SEED
-# )
-
-# clf = clfTree
-# printData.printInfo(clf, clfTree, clfSVM)
-
-
-def classification(clf):
-    # printData.printInfo(clf, clfTree, clfSVM)
-    ds = DataSet(K=FOLDS)
-
-    Features = ds.trainFeatures
-    Targets = ds.trainTarget
+def classification(clf, dataSet=None):
+    if dataSet is None:
+        # local dataset division
+        ds = DataSet(K=FOLDS)
+        Features = ds.trainFeatures
+        Targets = ds.trainTarget
+    else:
+        # sklearn dataset ???
+        ds = dataSet
+        Features = ds[0]
+        Targets = ds[1]
 
     single_dict = {
         'accuracy': [],
@@ -114,18 +107,11 @@ def classification(clf):
         accuracy = AccuracyPOSITIVE / numerosity
         accuracies.append(accuracy)
 
-        # print(f'Fold {k+1}: Overall accuracy = {round(accuracy, DIGITS)}')
-        # printData.printPredictions(accuracy, where_error_str, predict_str, target_str)  # noqa
-        # printData.printMetricsPerFold(observations)
-
         for obs in observations:
             metrics[obs.name]["accuracy"].append(obs.accuracy())
             metrics[obs.name]["precision"].append(obs.precision())
             metrics[obs.name]["recall"].append(obs.recall())
             metrics[obs.name]["F1"].append(obs.F1())
-
-    # avgAccuracy = np.mean(accuracies)
-    # stddevAccuracy = np.std(accuracies)
 
     mergedClasses = copy.deepcopy(single_dict)
 
@@ -168,12 +154,4 @@ def classification(clf):
         stats=mergedStatistics, data=mergedClasses
     )
 
-    # printData.printOverallAccuracy(avgAccuracy, stddevAccuracy)
-    # printData.printStatisticMetricsEach(metricStatistic)
-    # printData.printStatisticMetricsMerged(mergedStatistics)
-
     return mergedStatistics
-
-
-# stats = classification(clfTree)
-# printData.printStatisticMetricsMerged(stats)
