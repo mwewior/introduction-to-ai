@@ -1,5 +1,4 @@
 import numpy as np
-import collections
 
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import SVC
@@ -56,9 +55,3 @@ for score, metric in zip(SVM_scores, metrics):
 print("\nTREE scores (mean +- deviation)")
 for score, metric in zip(TREE_scores, metrics):
     print(f"{metric}: {100*score.mean()} +- {100*score.std()} [%]")
-
-
-# Classes = list(set(Y))
-# N = collections.Counter(Y).values()
-
-# print(f"{Classes}\n{N}")
