@@ -14,6 +14,7 @@ class NaiveBayesClassificator(ClassifierMixin):
         self._estiamtor_type = "classifier"
         self.k = k
         self.a = a
+        self.pstwa = []
 
     def fit(self, X: np.ndarray, y: np.ndarray) -> None:
 
@@ -46,7 +47,7 @@ class NaiveBayesClassificator(ClassifierMixin):
 
         self.k = len(Classes)
         self.a = ammount_features
-        self.mu = mu
+        self.mu = mu / self.k  # DO SPRAWDZENIA
         self.sigma = sigma
         self.P_classes = P_classes
 
@@ -72,6 +73,8 @@ class NaiveBayesClassificator(ClassifierMixin):
                 PI_pxy = PI_pxy*P[c, i]
             p[c] = self.P_classes[c] * PI_pxy
 
+        self.pstwa.append(p.T)
+
         # print(f"P:\n{P}\n")
         # print(f"p:\n{p}\n")
 
@@ -84,7 +87,7 @@ class NaiveBayesClassificator(ClassifierMixin):
             predictions = np.zeros(shape=(X.shape[0], 1))
             i = 0
             for x in X:
-                print(i, x)
+                # print(i, x)
                 predictions[i] = self.single_predict(x)
                 i += 1
             predictions = np.reshape(predictions, (-1,))
