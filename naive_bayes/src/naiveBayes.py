@@ -2,6 +2,7 @@ import numpy as np
 from collections import Counter
 from sklearn.base import BaseEstimator, ClassifierMixin
 
+# from scipy.special import logsumexp
 
 SEED = 318407
 np.random.seed(seed=SEED)
@@ -60,6 +61,8 @@ class NaiveBayesClassifier(BaseEstimator, ClassifierMixin):
         self.a = n_features
         self.mu = mu
         self.sigma = sigma
+        self.theta_ = mu
+        self.var_ = np.power(sigma, 2)
         self.P_classes = P_classes
 
     def single_predict(self, X: np.ndarray):
@@ -81,7 +84,10 @@ class NaiveBayesClassifier(BaseEstimator, ClassifierMixin):
         for c in range(self.k):
             PI_pxy = 0
             for i in range(self.a):
-                PI_pxy += np.log(P[c, i])
+                if P[c, i] < 1e-300:
+                    PI_pxy += -300
+                else:
+                    PI_pxy += np.log(P[c, i])
             p[c] = self.P_classes[c] * PI_pxy
 
         self.pstwa.append(p.T)
@@ -103,3 +109,17 @@ class NaiveBayesClassifier(BaseEstimator, ClassifierMixin):
                 i += 1
             predictions = np.reshape(predictions, (-1,))
         return predictions
+
+    # def predict(self, X: np.ndarray):
+    #     if len(X.shape) == 1 or X.shape[0] == 1 or X.shape[1] == 1:
+    #         joint_log_likelihood = self.single_predict(X)
+    #     else:
+    #         joint_log_likelihood = []
+    #         for i in range(np.size(self.classes_)):
+    #             jointi = 0  # np.log(self.class_prior_[i])
+    #             n_ij = -0.5 * np.sum(np.log(2.0 * np.pi * self.var_[i, :]))
+    #             n_ij -= 0.5 * np.sum(((X - self.theta_[i, :]) ** 2) / (self.var_[i, :]), 1)
+    #             joint_log_likelihood.append(jointi + n_ij)
+    #         jll = np.array(joint_log_likelihood).T
+    #         log_prob_x = logsumexp(jll, axis=1)
+    #         return jll - np.atleast_2d(log_prob_x).T
