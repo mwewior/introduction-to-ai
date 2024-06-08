@@ -1,14 +1,13 @@
 import numpy as np
 from collections import Counter
-# from sklearn.base import BaseEstimator
-from sklearn.base import ClassifierMixin
+from sklearn.base import BaseEstimator, ClassifierMixin
 
 
 SEED = 318407
 np.random.seed(seed=SEED)
 
 
-class NaiveBayesClassificator(ClassifierMixin):
+class NaiveBayesClassifier(BaseEstimator, ClassifierMixin):
 
     def __init__(self, k: int = 3, a: int = 4) -> None:
         self._estiamtor_type = "classifier"
@@ -20,34 +19,46 @@ class NaiveBayesClassificator(ClassifierMixin):
 
         D = len(y)
         N = list(Counter(y).values())
-        Classes = list(set(y))
-        P_classes = np.zeros(shape=(len(Classes), 1))
 
-        for c in range(len(Classes)):
-            Classes[c] = int(Classes[c])
+        self.classes_ = list(set(y))
+        n_classes = len(self.classes_)
+        n_features = X.shape[1]
+
+        P_classes = np.zeros(shape=(n_classes, 1))
+
+        for c in range(n_classes):
+            self.classes_[c] = int(self.classes_[c])
             P_classes[c] = N[c] / D
 
-        ammount_features = X.shape[1]
-        mu = np.zeros(shape=(len(Classes), ammount_features))
-        sigma = np.zeros(shape=(len(Classes), ammount_features))
+        mu = np.zeros(shape=(n_classes, n_features))
+        sigma = np.zeros(shape=(n_classes, n_features))
 
+        """
+            Mu
+        """
         for j in range(D):
-            for i in range(ammount_features):
-                mu[:, i] += X[j, i]
-        for c in Classes:
+            for i in range(n_features):
+                for c in self.classes_:
+                    if y[j] == c:
+                        mu[c, i] += X[j, i]
+        for c in self.classes_:
             mu[c, :] = mu[c, :] / N[c]
 
+        """
+            Sigma
+        """
         for j in range(D):
-            for i in range(ammount_features):
-                for c in Classes:
-                    sigma[c, i] = np.power(X[j, i] - mu[c, i], 2)
-        for c in Classes:
+            for i in range(n_features):
+                for c in self.classes_:
+                    if y[j] == c:
+                        sigma[c, i] = np.power(X[j, i] - mu[c, i], 2)
+        for c in self.classes_:
             sigma[c, :] = sigma[c, :] / (N[c] - 1)
         sigma = np.sqrt(sigma)
 
-        self.k = len(Classes)
-        self.a = ammount_features
-        self.mu = mu / self.k  # DO SPRAWDZENIA
+        self.k = n_classes
+        self.a = n_features
+        self.mu = mu
         self.sigma = sigma
         self.P_classes = P_classes
 
@@ -68,9 +79,9 @@ class NaiveBayesClassificator(ClassifierMixin):
 
         p = np.zeros(shape=(self.k, 1))
         for c in range(self.k):
-            PI_pxy = 1
+            PI_pxy = 0
             for i in range(self.a):
-                PI_pxy = PI_pxy*P[c, i]
+                PI_pxy += np.log(P[c, i])
             p[c] = self.P_classes[c] * PI_pxy
 
         self.pstwa.append(p.T)

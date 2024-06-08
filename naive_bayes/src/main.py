@@ -2,6 +2,8 @@ import numpy as np
 
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import SVC
+from sklearn.naive_bayes import GaussianNB
+
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import StratifiedKFold
 
@@ -55,3 +57,12 @@ for score, metric in zip(SVM_scores, metrics):
 print("\nTREE scores (mean +- deviation)")
 for score, metric in zip(TREE_scores, metrics):
     print(f"{metric}: {100*score.mean()} +- {100*score.std()} [%]")
+
+clfGNB = GaussianNB()
+
+GNB_accuracy = cross_val_score(clfGNB, ds_skl.features, ds_skl.target, cv=SKF, scoring='accuracy')
+GNB_precision = cross_val_score(clfGNB, ds_skl.features, ds_skl.target, cv=SKF, scoring='precision_weighted')
+GNB_recall = cross_val_score(clfGNB, ds_skl.features, ds_skl.target, cv=SKF, scoring='recall_weighted')
+GNB_f1 = cross_val_score(clfGNB, ds_skl.features, ds_skl.target, cv=SKF, scoring='f1_weighted')
+
+GNB_scores = [GNB_accuracy, GNB_precision, GNB_recall, GNB_f1]
