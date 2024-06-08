@@ -71,18 +71,21 @@ class NaiveBayesClassificator(ClassifierMixin):
             for i in range(self.a):
                 PI_pxy = PI_pxy*P[c, i]
             p[c] = self.P_classes[c] * PI_pxy
-        # p.T
 
-        print(f"P: {P}")
-        print(f"p: {p}")
-        print(f"max: {p.argmax()}")
-        return p  # p.argmax()  # np.argmax(p)
+        # print(f"P:\n{P}\n")
+        # print(f"p:\n{p}\n")
+
+        return p.argmax()  # np.argmax(p)
 
     def predict(self, X: np.ndarray):
-        predictions = []
         if len(X.shape) == 1 or X.shape[0] == 1 or X.shape[1] == 1:
             predictions = self.single_predict(X)
         else:
+            predictions = np.zeros(shape=(X.shape[0], 1))
+            i = 0
             for x in X:
-                predictions.append(self.single_predict(x))
+                print(i, x)
+                predictions[i] = self.single_predict(x)
+                i += 1
+            predictions = np.reshape(predictions, (-1,))
         return predictions
