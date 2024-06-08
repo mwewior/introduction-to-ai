@@ -60,9 +60,9 @@ for score, metric in zip(TREE_scores, metrics):
 
 clfGNB = GaussianNB()
 
-GNB_accuracy = cross_val_score(clfGNB, ds_skl.features, ds_skl.target, cv=SKF, scoring='accuracy')
-GNB_precision = cross_val_score(clfGNB, ds_skl.features, ds_skl.target, cv=SKF, scoring='precision_weighted')
-GNB_recall = cross_val_score(clfGNB, ds_skl.features, ds_skl.target, cv=SKF, scoring='recall_weighted')
-GNB_f1 = cross_val_score(clfGNB, ds_skl.features, ds_skl.target, cv=SKF, scoring='f1_weighted')
+GNB_acc = cross_val_score(clfGNB, X, Y, cv=SKF, scoring='accuracy')
+GNB_pre = cross_val_score(clfGNB, X, Y, cv=SKF, scoring='precision_weighted')
+GNB_rec = cross_val_score(clfGNB, X, Y, cv=SKF, scoring='recall_weighted')
+GNB_f1 = cross_val_score(clfGNB, X, Y, cv=SKF, scoring='f1_weighted')
 
-GNB_scores = [GNB_accuracy, GNB_precision, GNB_recall, GNB_f1]
+GNB_scores = [GNB_acc, GNB_pre, GNB_rec, GNB_f1]
