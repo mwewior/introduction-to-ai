@@ -1,11 +1,15 @@
 import numpy as np
 
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import StratifiedKFold
+
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import SVC
 from sklearn.naive_bayes import GaussianNB
-
-from sklearn.model_selection import cross_val_score
-from sklearn.model_selection import StratifiedKFold
+try:
+    from naiveBayes import NaiveBayesClassifier
+except ModuleNotFoundError:
+    from src.naiveBayes import NaiveBayesClassifier
 
 try:
     import dataset
@@ -47,8 +51,28 @@ TREE_f1 = cross_val_score(clfTree, X, Y, cv=SKF, scoring="f1_weighted")
 
 TREE_scores = [TREE_acc, TREE_pre, TREE_rec, TREE_f1]
 
+clfGNB = GaussianNB()
+
+GNB_acc = cross_val_score(clfGNB, X, Y, cv=SKF, scoring="accuracy")
+GNB_pre = cross_val_score(clfGNB, X, Y, cv=SKF, scoring="precision_weighted")
+GNB_rec = cross_val_score(clfGNB, X, Y, cv=SKF, scoring="recall_weighted")
+GNB_f1 = cross_val_score(clfGNB, X, Y, cv=SKF, scoring="f1_weighted")
+
+GNB_scores = [GNB_acc, GNB_pre, GNB_rec, GNB_f1]
+
+
+clfBayes = NaiveBayesClassifier()
+
+BAYES_acc = cross_val_score(clfBayes, X, Y, cv=SKF, scoring="accuracy")
+BAYES_pre = cross_val_score(clfBayes, X, Y, cv=SKF, scoring="precision_weighted")  # noqa
+BAYES_rec = cross_val_score(clfBayes, X, Y, cv=SKF, scoring="recall_weighted")
+BAYES_f1 = cross_val_score(clfBayes, X, Y, cv=SKF, scoring="f1_weighted")
+
+BAYES_scores = [BAYES_acc, BAYES_pre, BAYES_rec, BAYES_f1]
+
 
 metrics = [" accuracy", "precision", "   recall", "       f1"]
+
 
 print("\nSVM scores (mean +- deviation)")
 for score, metric in zip(SVM_scores, metrics):
@@ -58,11 +82,10 @@ print("\nTREE scores (mean +- deviation)")
 for score, metric in zip(TREE_scores, metrics):
     print(f"{metric}: {100*score.mean()} +- {100*score.std()} [%]")
 
-clfGNB = GaussianNB()
+print("\n(Sklearn Gausian NB) Naive Bayes scores (mean +- deviation)")
+for score, metric in zip(GNB_scores, metrics):
+    print(f"{metric}: {100*score.mean()} +- {100*score.std()} [%]")
 
-GNB_acc = cross_val_score(clfGNB, X, Y, cv=SKF, scoring='accuracy')
-GNB_pre = cross_val_score(clfGNB, X, Y, cv=SKF, scoring='precision_weighted')
-GNB_rec = cross_val_score(clfGNB, X, Y, cv=SKF, scoring='recall_weighted')
-GNB_f1 = cross_val_score(clfGNB, X, Y, cv=SKF, scoring='f1_weighted')
-
-GNB_scores = [GNB_acc, GNB_pre, GNB_rec, GNB_f1]
+print("\n(Own) Naive Bayes scores (mean +- deviation)")
+for score, metric in zip(BAYES_scores, metrics):
+    print(f"{metric}: {100*score.mean()} +- {100*score.std()} [%]")
