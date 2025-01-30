@@ -7,6 +7,7 @@ ewolucja/images
 minmax/src/results
 **/images
 **/workspace.py
-*.pdf
 **/*Test.py
 **/parallel_main.py
+*:Zone.Identifier"
+# *.pdf
